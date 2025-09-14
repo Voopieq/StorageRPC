@@ -1,1 +1,30 @@
-/.vs
+# Build results
+bin/
+obj/
+[Bb]uild/
+[Ll]og/
+
+# Visual Studio files
+.vs/
+*.user
+*.suo
+
+# Rider / JetBrains IDE
+.idea/
+
+# VSCode
+.vscode/
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+*.nuget.props
+*.nuget.targets
+
+# Others
+*.log
+*.tmp
+*.cache
+*.DS_Store
+Thumbs.db

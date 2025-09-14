@@ -1,6 +1,6 @@
 ﻿namespace StorageContract
 {
-    public class Class1
+    public class StorageService
     {
 
     }
