@@ -1,16 +1,77 @@
 ﻿namespace Clients;
 
-using System.Net;
-
-using NLog;
+using Microsoft.Extensions.DependencyInjection;
 
 using SimpleRpc.Transports;
 using SimpleRpc.Transports.Http.Server;
 using SimpleRpc.Serialization.Hyperion;
 
+using NLog;
 using Services;
+using NLog.Targets;
+using SimpleRpc.Transports.Http.Client;
 
-public class Client
+class Client
 {
+    /// <summary>
+    /// Logger for this class
+    /// </summary>
+    Logger mlog = LogManager.GetCurrentClassLogger();
 
+    /// <summary>
+    /// Configure Logging subsystem
+    /// </summary>
+    private void ConfigureLogging()
+    {
+        var config = new NLog.Config.LoggingConfiguration();
+
+        var console = new ConsoleTarget("console")
+        {
+            Layout = @"${date:format=HH\:mm\:ss}|${level}| ${message} ${exception}"
+        };
+        config.AddTarget(console);
+        config.AddRuleForAllLevels(console);
+
+        LogManager.Configuration = config;
+    }
+
+    public static void Main(string[] args)
+    {
+        var self = new Client();
+        self.Run();
+    }
+
+    private void Run()
+    {
+        ConfigureLogging();
+
+        // Does the user want to download or upload the file. Use 0 for download, 1 for upload.
+        var rng = new Random();
+
+        while (true)
+        {
+            try
+            {
+                var sc = new ServiceCollection();
+
+                sc.AddSimpleRpcClient("storageService", new HttpClientTransportOptions
+                {
+                    Url = "http://127.0.0.1:5000/filestoragerpc",
+                    Serializer = "HyperionMessageSerializer"
+                }).AddSimpleRpcHyperionSerializer();
+
+                sc.AddSimpleRpcProxy<IStorageService>("storageService");
+
+                var sp = sc.BuildServiceProvider();
+
+                var storageService = sp.GetService<IStorageService>();
+            }
+            catch (Exception e)
+            {
+                mlog.Warn(e, "Unhandled exception caught. Will restart main loop...");
+
+                Thread.Sleep(2000);
+            }
+        }
+    }
 }

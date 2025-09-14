@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\KTU\\VII_Semestras_2025\\Tinklo paslaugu kurimas ir diegimas\\FileStorageRPC\\StorageContract\\StorageContract.csproj": {}
+    "c:\\KTU\\VII_Semestras_2025\\Tinklo paslaugu kurimas ir diegimas\\FileStorageRPC\\StorageContract\\StorageContract.csproj": {}
   },
   "projects": {
-    "C:\\KTU\\VII_Semestras_2025\\Tinklo paslaugu kurimas ir diegimas\\FileStorageRPC\\StorageContract\\StorageContract.csproj": {
+    "c:\\KTU\\VII_Semestras_2025\\Tinklo paslaugu kurimas ir diegimas\\FileStorageRPC\\StorageContract\\StorageContract.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\KTU\\VII_Semestras_2025\\Tinklo paslaugu kurimas ir diegimas\\FileStorageRPC\\StorageContract\\StorageContract.csproj",
+        "projectUniqueName": "c:\\KTU\\VII_Semestras_2025\\Tinklo paslaugu kurimas ir diegimas\\FileStorageRPC\\StorageContract\\StorageContract.csproj",
         "projectName": "StorageContract",
-        "projectPath": "C:\\KTU\\VII_Semestras_2025\\Tinklo paslaugu kurimas ir diegimas\\FileStorageRPC\\StorageContract\\StorageContract.csproj",
+        "projectPath": "c:\\KTU\\VII_Semestras_2025\\Tinklo paslaugu kurimas ir diegimas\\FileStorageRPC\\StorageContract\\StorageContract.csproj",
         "packagesPath": "C:\\Users\\doman\\.nuget\\packages\\",
-        "outputPath": "C:\\KTU\\VII_Semestras_2025\\Tinklo paslaugu kurimas ir diegimas\\FileStorageRPC\\StorageContract\\obj\\",
+        "outputPath": "c:\\KTU\\VII_Semestras_2025\\Tinklo paslaugu kurimas ir diegimas\\FileStorageRPC\\StorageContract\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

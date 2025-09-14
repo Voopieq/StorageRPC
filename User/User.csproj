@@ -5,6 +5,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.8" />
     <PackageReference Include="NLog" Version="6.0.4" />
     <PackageReference Include="SimpleRpc" Version="0.2.3" />
     <PackageReference Include="SimpleRpc.Serialization.Hyperion" Version="1.0.0-beta1" />
