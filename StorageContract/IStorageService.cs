@@ -1,7 +1,7 @@
-﻿namespace StorageContract
-{
-    public class StorageService
-    {
+﻿namespace Services;
 
-    }
+public class StorageService
+{
+
 }
+
