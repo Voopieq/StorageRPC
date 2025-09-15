@@ -16,7 +16,7 @@ public class Server
     /// <summary>
     /// Logger for this class
     /// </summary>
-    Logger mlog = LogManager.GetCurrentClassLogger();
+    Logger _log = LogManager.GetCurrentClassLogger();
 
     /// <summary>
     /// Configure Logging subsystem
@@ -45,7 +45,7 @@ public class Server
     {
         ConfigureLogging();
 
-        mlog.Info("Server is starting...");
+        _log.Info("Server is starting...");
 
         StartServer(args);
     }

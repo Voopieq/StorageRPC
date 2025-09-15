@@ -16,7 +16,7 @@ class Client
     /// <summary>
     /// Logger for this class
     /// </summary>
-    Logger mlog = LogManager.GetCurrentClassLogger();
+    Logger _log = LogManager.GetCurrentClassLogger();
 
     /// <summary>
     /// Configure Logging subsystem
@@ -68,7 +68,7 @@ class Client
             }
             catch (Exception e)
             {
-                mlog.Warn(e, "Unhandled exception caught. Will restart main loop...");
+                _log.Warn(e, "Unhandled exception caught. Will restart main loop...");
 
                 Thread.Sleep(2000);
             }
