@@ -35,18 +35,15 @@ class Client
         LogManager.Configuration = config;
     }
 
-    public static void Main(string[] args)
-    {
-        var self = new Client();
-        self.Run();
-    }
-
     private void Run()
     {
         ConfigureLogging();
 
         // Does the user want to download or upload the file. Use 0 for download, 1 for upload.
         var rng = new Random();
+
+        int decision = rng.Next(0, 2);
+        _log.Info("Number: " + decision);
 
         while (true)
         {
@@ -66,7 +63,7 @@ class Client
 
                 var storageService = sp.GetService<IStorageService>();
 
-                int decision = rng.Next(0, 1);
+                //int decision = rng.Next(0, 1);
                 // User cycle
                 // while (true)
                 // {
@@ -80,5 +77,12 @@ class Client
                 Thread.Sleep(2000);
             }
         }
+    }
+
+
+    public static void Main(string[] args)
+    {
+        var self = new Client();
+        self.Run();
     }
 }

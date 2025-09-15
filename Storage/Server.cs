@@ -18,6 +18,8 @@ public class Server
     /// </summary>
     Logger _log = LogManager.GetCurrentClassLogger();
 
+    private int _storageSize = 5000;
+
     /// <summary>
     /// Configure Logging subsystem
     /// </summary>

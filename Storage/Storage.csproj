@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="NLog" Version="6.0.4" />
-    <PackageReference Include="SimpleRpc" Version="0.2.3" />
+    <PackageReference Include="SimpleRpc" Version="1.0.0-beta1" />
     <PackageReference Include="SimpleRpc.Serialization.Hyperion" Version="1.0.0-beta1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
