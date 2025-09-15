@@ -65,6 +65,13 @@ class Client
                 var sp = sc.BuildServiceProvider();
 
                 var storageService = sp.GetService<IStorageService>();
+
+                int decision = rng.Next(0, 1);
+                // User cycle
+                // while (true)
+                // {
+                //     // TODO: determine whether to send or receive a file
+                // }
             }
             catch (Exception e)
             {
