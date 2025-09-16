@@ -77,7 +77,7 @@ class Client
                 // User cycle
                 while (true)
                 {
-                    operationType = (OperationType)rng.Next(0, 2);
+                    operationType = (OperationType)rng.Next(1, 1);
                     _log.Info("I decided to " + operationType + " the file.");
 
                     Thread.Sleep(2000 + rng.Next(1500));

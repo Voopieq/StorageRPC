@@ -7,7 +7,7 @@ using Services;
 public class StorageState
 {
     public readonly object AccessLock = new();
-    public int StorageCapacity = 500000; // Total storage size, MB
+    public int StorageCapacity = 200; // Total storage size, MB
     public int CurrentSize = 0;   // How much space occupied
     public bool IsStorageFull = false;
     public Dictionary<string, int> FilesDict = new Dictionary<string, int>(); // Actual files. Key = file name, Value = file size.
@@ -59,7 +59,7 @@ class StorageLogic
             //_state.FilesDict.Add(file.FileName, file.FileSize);
             _state.FilesList.Add(file);
             _state.CurrentSize += file.FileSize;
-            _log.Info("File added to storage! Total storage size: " + _state.CurrentSize);
+            _log.Info("File added to storage! Total storage size: " + _state.CurrentSize + "/" + _state.StorageCapacity + "MB");
             return true;
 
         }
@@ -76,6 +76,7 @@ class StorageLogic
                 {
                     _log.Info("Found a file with number " + fileNumber);
                     _state.FilesList.Remove(file);
+                    _state.CurrentSize -= file.FileSize;
                     return file;
                 }
 
@@ -92,25 +93,30 @@ class StorageLogic
     /// </summary>
     public void BackgroundTask()
     {
+        Random rng = new Random();
+        int counter = 0;
+
         while (true)
         {
-            int counter = 0;
+            Thread.Sleep(500 + rng.Next(1500));
 
             lock (_state.AccessLock)
             {
                 if (_state.CurrentSize > _state.StorageCapacity)
                 {
-                    counter++;
-                    if (counter == 3)
+                    while (true)
                     {
-                        // Activate cleaners
-                        _log.Info("Activating cleaners!");
-                        return;
+                        counter++;
+                        _log.Warn("Storage is full! (" + counter + "/3");
+                        if (counter == 3)
+                        {
+                            // Activate cleaners
+                            _log.Info("Activating cleaners!");
+                            return;
+                        }
                     }
                 }
                 counter = 0;
-                //_log.Info("Storage is currently not full. Checking again...");
-
             }
         }
     }
