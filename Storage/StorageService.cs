@@ -8,8 +8,7 @@ public class StorageService : IStorageService
 
     public int GetFileCount()
     {
-        throw new NotImplementedException();
-        // return _storageLogic.GetFileCount();
+        return _storageLogic.GetFileCount();
     }
 
     public FileDesc GetFile()
@@ -27,10 +26,9 @@ public class StorageService : IStorageService
         throw new NotImplementedException();
     }
 
-    public FileDesc TryGetFile(int fileNumber)
+    public FileDesc? TryGetFile(int fileNumber)
     {
-        throw new NotImplementedException();
-        //return _storageLogic.TryGetFile(fileNumber);
+        return _storageLogic.TryGetFile(fileNumber);
     }
 
     public bool TrySendFile(FileDesc file)

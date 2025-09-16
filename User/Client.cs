@@ -10,13 +10,25 @@ using NLog;
 using Services;
 using NLog.Targets;
 using SimpleRpc.Transports.Http.Client;
+using System.Data.SqlTypes;
 
 class Client
 {
     /// <summary>
+    /// Enum to determine if the user wants to download, or upload the file.
+    /// </summary>
+    private enum OperationType
+    {
+        Download,
+        Upload
+    }
+
+    /// <summary>
     /// Logger for this class
     /// </summary>
     Logger _log = LogManager.GetCurrentClassLogger();
+
+    OperationType operationType;
 
     /// <summary>
     /// Configure Logging subsystem
@@ -62,27 +74,42 @@ class Client
 
                 FileDesc file = new FileDesc();
 
-                int decision = rng.Next(1, 1);
-                _log.Info("Decision: " + decision);
-
                 // User cycle
                 while (true)
                 {
-                    // Upload the file
-                    if (decision == 1)
+                    operationType = (OperationType)rng.Next(0, 2);
+                    _log.Info("I decided to " + operationType + " the file.");
+
+                    Thread.Sleep(2000 + rng.Next(1500));
+
+                    switch (operationType)
                     {
-                        // Generate file info
-                        int fileSize = rng.Next(1, 300);
-                        string fileName = Guid.NewGuid().ToString();
+                        case OperationType.Upload:
+                            // Generate file info
+                            int fileSize = rng.Next(1, 300);
+                            string fileName = Guid.NewGuid().ToString();
 
-                        file.FileName = fileName;
-                        file.FileSize = fileSize;
+                            file.FileName = fileName;
+                            file.FileSize = fileSize;
 
-                        if (!storageService.TrySendFile(file))
-                        {
-                            _log.Warn("Storage is full!");
-                            return;
-                        }
+                            // Storage is full
+                            if (!storageService.TrySendFile(file))
+                            {
+                                _log.Warn("Storage is full!");
+                            }
+                            break;
+                        case OperationType.Download:
+                            // Generate file number
+                            int fileCount = storageService.GetFileCount();
+                            _log.Info("Storage file count: " + fileCount);
+                            int rngFileNumber = rng.Next(0, fileCount);
+
+                            if (storageService.TryGetFile(rngFileNumber) is null)
+                            {
+                                // File does not exist
+                                _log.Warn("File with number " + rngFileNumber + " doesn't exist!");
+                            }
+                            break;
                     }
                 }
             }
