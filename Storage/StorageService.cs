@@ -27,13 +27,14 @@ public class StorageService : IStorageService
         throw new NotImplementedException();
     }
 
-    public FileDesc TryGetFile()
+    public FileDesc TryGetFile(int fileNumber)
     {
         throw new NotImplementedException();
+        //return _storageLogic.TryGetFile(fileNumber);
     }
 
     public bool TrySendFile(FileDesc file)
     {
-        throw new NotImplementedException();
+        return _storageLogic.TrySendFile(file);
     }
 }

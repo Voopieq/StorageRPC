@@ -32,7 +32,7 @@ public interface IStorageService
     /// Allows to request a file to be received from the server.
     /// </summary>
     /// <returns>File descriptor</returns>
-    FileDesc TryGetFile();
+    FileDesc TryGetFile(int fileNumber);
 
     /// <summary>
     /// Gets file from the storage.

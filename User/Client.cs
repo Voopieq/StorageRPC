@@ -42,9 +42,6 @@ class Client
         // Does the user want to download or upload the file. Use 0 for download, 1 for upload.
         var rng = new Random();
 
-        int decision = rng.Next(0, 2);
-        _log.Info("Number: " + decision);
-
         while (true)
         {
             try
@@ -63,12 +60,26 @@ class Client
 
                 var storageService = sp.GetService<IStorageService>();
 
-                //int decision = rng.Next(0, 1);
+                FileDesc file = new FileDesc();
+
+                int decision = rng.Next(0, 1);
+
                 // User cycle
-                // while (true)
-                // {
-                //     // TODO: determine whether to send or receive a file
-                // }
+                while (true)
+                {
+                    // Upload the file
+                    if (decision == 1)
+                    {
+                        // Generate file info
+                        int fileSize = rng.Next(1, 300);
+                        string fileName = Guid.NewGuid().ToString();
+
+                        file.FileName = fileName;
+                        file.FileSize = fileSize;
+
+                        storageService.TrySendFile(file);
+                    }
+                }
             }
             catch (Exception e)
             {
