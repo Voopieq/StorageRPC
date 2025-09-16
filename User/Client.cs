@@ -62,7 +62,8 @@ class Client
 
                 FileDesc file = new FileDesc();
 
-                int decision = rng.Next(0, 1);
+                int decision = rng.Next(1, 1);
+                _log.Info("Decision: " + decision);
 
                 // User cycle
                 while (true)
@@ -77,7 +78,11 @@ class Client
                         file.FileName = fileName;
                         file.FileSize = fileSize;
 
-                        storageService.TrySendFile(file);
+                        if (!storageService.TrySendFile(file))
+                        {
+                            _log.Warn("Storage is full!");
+                            return;
+                        }
                     }
                 }
             }
