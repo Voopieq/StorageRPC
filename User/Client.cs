@@ -52,7 +52,7 @@ class Client
         ConfigureLogging();
 
         // Does the user want to download or upload the file. Use 0 for download, 1 for upload.
-        var rng = new Random();
+        Random rng = new Random();
 
         while (true)
         {
@@ -77,10 +77,16 @@ class Client
                 // User cycle
                 while (true)
                 {
+                    Thread.Sleep(2000 + rng.Next(1500));
+
+                    if (storageService.IsCleaningMode())
+                    {
+                        _log.Warn("Storage is in cleaning mode. Waiting for it to finish...");
+                        continue;
+                    }
+
                     operationType = (OperationType)rng.Next(1, 1);
                     _log.Info("I decided to " + operationType + " the file.");
-
-                    Thread.Sleep(2000 + rng.Next(1500));
 
                     switch (operationType)
                     {
@@ -92,7 +98,7 @@ class Client
                             file.FileName = fileName;
                             file.FileSize = fileSize;
 
-                            // Storage is full
+                            // Storage is full, or is in cleaning mode
                             if (!storageService.TrySendFile(file))
                             {
                                 _log.Warn("Storage is full!");

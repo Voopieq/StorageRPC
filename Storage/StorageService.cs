@@ -31,8 +31,38 @@ public class StorageService : IStorageService
         return _storageLogic.TryGetFile(fileNumber);
     }
 
+    public bool TryGetOldestFile()
+    {
+        return _storageLogic.TryGetOldestFile();
+    }
+
+    public bool DeleteFile(FileDesc file)
+    {
+        return _storageLogic.DeleteFile(file);
+    }
+
+    public bool GetCleanerState(string cleanerID)
+    {
+        return _storageLogic.GetCleanerState(cleanerID);
+    }
+
     public bool TrySendFile(FileDesc file)
     {
         return _storageLogic.TrySendFile(file);
+    }
+
+    public bool IsCleaningMode()
+    {
+        return _storageLogic.IsCleaningMode();
+    }
+
+    public void AddToCleanersList(CleanerData cleaner)
+    {
+        _storageLogic.AddToCleanersList(cleaner);
+    }
+
+    public void ChangeCleanerState(string cleanerID, bool state)
+    {
+        _storageLogic.ChangeCleanerState(cleanerID, state);
     }
 }
