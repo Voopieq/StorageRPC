@@ -56,12 +56,10 @@ class StorageLogic
             }
 
             // Storage is not full. We can store the file.
-            //_state.FilesDict.Add(file.FileName, file.FileSize);
             _state.FilesList.Add(file);
             _state.CurrentSize += file.FileSize;
             _log.Info("File added to storage! Total storage size: " + _state.CurrentSize + "/" + _state.StorageCapacity + "MB");
             return true;
-
         }
     }
 
@@ -98,25 +96,26 @@ class StorageLogic
 
         while (true)
         {
-            Thread.Sleep(500 + rng.Next(1500));
+            Thread.Sleep(1500);
 
             lock (_state.AccessLock)
             {
-                if (_state.CurrentSize > _state.StorageCapacity)
+                if (_state.CurrentSize <= _state.StorageCapacity)
                 {
-                    while (true)
-                    {
-                        counter++;
-                        _log.Warn("Storage is full! (" + counter + "/3");
-                        if (counter == 3)
-                        {
-                            // Activate cleaners
-                            _log.Info("Activating cleaners!");
-                            return;
-                        }
-                    }
+                    counter = 0;
+                    _log.Info("Storage is not full");
+                    continue;
                 }
-                counter = 0;
+
+                counter++;
+                _log.Warn($"Storage is full! ({counter}/3");
+
+                if (counter >= 3)
+                {
+                    // Activate cleaners
+                    _log.Info("Activating cleaners!");
+                    return;
+                }
             }
         }
     }

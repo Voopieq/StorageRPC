@@ -101,7 +101,6 @@ class Client
                         case OperationType.Download:
                             // Generate file number
                             int fileCount = storageService.GetFileCount();
-                            _log.Info("Storage file count: " + fileCount);
                             int rngFileNumber = rng.Next(0, fileCount);
 
                             if (storageService.TryGetFile(rngFileNumber) is null)
@@ -109,6 +108,9 @@ class Client
                                 // File does not exist
                                 _log.Warn("File with number " + rngFileNumber + " doesn't exist!");
                             }
+                            break;
+                        default:
+                            _log.Error("Operation type doesn't exist! Type: " + operationType);
                             break;
                     }
                 }
