@@ -194,11 +194,12 @@ class StorageLogic
                 if (_state.IsCleaningMode)
                 {
                     // Storage is still not empty. Continue
-                    if (_state.CurrentSize == 0 || !_state.Cleaners.TrueForAll(cleaner => cleaner.IsDoneCleaning))
+                    if (_state.CurrentSize == 0 || _state.Cleaners.TrueForAll(cleaner => cleaner.IsDoneCleaning))
                     {
                         // Storage is empty. Change state
                         _log.Info("Cleaning finished. Switching off cleaning mode.");
                         _state.IsCleaningMode = false;
+                        counter = 0;
                         continue;
                     }
                 }

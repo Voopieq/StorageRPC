@@ -21,6 +21,8 @@ class Cleaner
 
     CleanerData cleanerData = new CleanerData();
 
+    bool hasCleanedThisCycle = false;
+
     /// <summary>
     /// Configure Logging subsystem
     /// </summary>
@@ -77,28 +79,29 @@ class Cleaner
                     // TODO: If storage is empty, reset status.
                     if (!storageService.IsCleaningMode())
                     {
-                        if (storageService.GetCleanerState(cleanerData.Id))
+                        hasCleanedThisCycle = false;
+                        if (!storageService.GetCleanerState(cleanerData.Id))
                         {
                             // Reset cleaner state if storage stopped cleaning
-                            storageService.ChangeCleanerState(cleanerData.Id, false);
+                            storageService.ChangeCleanerState(cleanerData.Id, true);
                             _log.Info($"Cleaner {cleanerData.Id} reset (no cleaning mode).");
                         }
                         continue;
                     }
 
-                    // Check if cleaning mode has been activated
-                    _log.Info("Cleaner is cleaning: " + storageService.GetCleanerState(cleanerData.Id));
-                    if (!storageService.IsCleaningMode()) { _log.Info("Nothing to clean."); continue; }
-
-                    // Do the cleaning
-                    Thread.Sleep(rng.Next(1500));
-                    _log.Info("Retrieving a file from storage and deleting it...");
-                    storageService.ChangeCleanerState(cleanerData.Id, false);
-
-                    if (storageService.TryGetOldestFile())
+                    if (storageService.GetCleanerState(cleanerData.Id) && !hasCleanedThisCycle)
                     {
-                        _log.Info("File successfully deleted!");
+                        // Do the cleaning
+                        storageService.ChangeCleanerState(cleanerData.Id, false);
+                        Thread.Sleep(rng.Next(1500));
+                        _log.Info("Retrieving a file from storage and deleting it...");
+
+                        if (storageService.TryGetOldestFile())
+                        {
+                            _log.Info("File successfully deleted!");
+                        }
                         storageService.ChangeCleanerState(cleanerData.Id, true);
+                        hasCleanedThisCycle = true;
                     }
 
 
