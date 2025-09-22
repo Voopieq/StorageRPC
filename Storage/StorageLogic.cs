@@ -99,57 +99,52 @@ class StorageLogic
             // Storage is full. Display an error.
             if (_state.CurrentSize > _state.StorageCapacity)
             {
-                _log.Error("Storage is full. Cannot receive file!");
+                _log.Error("Storage is full. Cannot receive file!\n");
                 return false;
             }
 
             // Storage is not full. We can store the file.
             _state.FilesList.Add(file);
             _state.CurrentSize += file.FileSize;
-            _log.Info("File added to storage! Total storage size: " + _state.CurrentSize + "/" + _state.StorageCapacity + "MB");
+
+            _log.Info("File added to storage! Total storage size: " + _state.CurrentSize + "/" + _state.StorageCapacity + "MB\n");
             return true;
         }
     }
 
-    public FileDesc? TryGetFile(int fileNumber)
+    public FileDesc? TryGetFile(int idx)
     {
         lock (_state.AccessLock)
         {
-            // File does not exist in the storage
-            foreach (FileDesc file in _state.FilesList)
+            FileDesc? file = _state.FilesList.ElementAtOrDefault(idx);
+            if (file != null)
             {
-                if (file.FileNumber == fileNumber)
-                {
-                    _log.Info("Found a file with number " + fileNumber);
-                    _state.FilesList.Remove(file);
-                    _state.CurrentSize -= file.FileSize;
-                    return file;
-                }
-
+                _log.Info($"Found a file with index {idx}. Passing it to client and removing from storage. New storage size: {_state.CurrentSize}.\n");
+                _state.FilesList.Remove(file);
+                _state.CurrentSize -= file.FileSize;
+                return file;
             }
 
             // File doesn't exist. Return an empty object and an error.
-            _log.Error("File with number " + fileNumber + " doesn't exist in the storage!");
+            _log.Error($"File with index {idx} doesn't exist in the storage!\n");
             return null;
         }
     }
 
-    // TODO: This removes the file. Change function name.
-    public bool TryGetOldestFile()
+    public bool TryRemoveOldestFile()
     {
         lock (_state.AccessLock)
         {
             if (_state.FilesList.Count <= 0)
             {
-                _log.Error("There are no files in the storage to return!");
+                _log.Error("There are no files in the storage to return!\n");
                 return false;
             }
 
-            // TODO: Maybe delete the file here?
             FileDesc file = _state.FilesList[0];
             _state.FilesList.Remove(file);
             _state.CurrentSize -= file.FileSize;
-            _log.Info("New storage size: " + _state.CurrentSize);
+            _log.Info("Oldest file removed. New storage size: " + _state.CurrentSize);
             return true;
         }
     }
@@ -160,13 +155,13 @@ class StorageLogic
         {
             if (file is null)
             {
-                _log.Error("Trying to delete a null file!");
+                _log.Error("Trying to delete a null file!\n");
                 return false;
             }
 
             if (_state.FilesList.RemoveAll(f => f.FileName == file.FileName) == 0)
             {
-                _log.Error("File doesn't exist in storage!");
+                _log.Error("File doesn't exist in storage!\n");
                 return false;
             }
 
@@ -185,7 +180,7 @@ class StorageLogic
 
         while (true)
         {
-            Thread.Sleep(1500);
+            Thread.Sleep(1000);
 
             //_log.Info("Sleeping some more");
 
@@ -197,35 +192,29 @@ class StorageLogic
                     if (_state.CurrentSize == 0 || _state.Cleaners.TrueForAll(cleaner => cleaner.IsDoneCleaning))
                     {
                         // Storage is empty. Reset the state
-                        _log.Info("Cleaning finished. Switching off cleaning mode.");
+                        _log.Info("Cleaning finished. Switching off cleaning mode.\n");
                         _state.IsCleaningMode = false;
                         counter = 0;
-                        continue;
                     }
+                    continue;
                 }
 
                 if (_state.CurrentSize <= _state.StorageCapacity)
                 {
                     counter = 0;
                     _state.IsCleaningMode = false;
-                    //_log.Info("Storage is not full");
                     continue;
                 }
 
                 // Storage is full
                 counter++;
-                _log.Warn($"Storage is full! ({counter}/3");
+                _log.Warn($"Storage is full! ({counter}/3)");
 
-                if (counter >= 3)
+                if (counter == 3)
                 {
                     // Activate cleaners
                     _state.IsCleaningMode = true;
                     _log.Info("Activating storage cleaning mode...");
-                    // if (_state.CurrentSize <= 0)
-                    // {
-                    //     _log.Info("Storage has been fully cleaned!");
-                    //     _state.IsCleaningMode = false;
-                    // }
                 }
             }
         }

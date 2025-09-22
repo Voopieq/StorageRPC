@@ -81,7 +81,7 @@ class Client
 
                     if (storageService.IsCleaningMode())
                     {
-                        _log.Warn("Storage is in cleaning mode. Waiting for it to finish...");
+                        _log.Warn("Storage is in cleaning mode. Waiting for it to finish...\n");
                         continue;
                     }
 
@@ -92,27 +92,35 @@ class Client
                     {
                         case OperationType.Upload:
                             // Generate file info
-                            int fileSize = rng.Next(300, 300);
+                            int fileSize = rng.Next(20, 100);
                             string fileName = Guid.NewGuid().ToString();
 
                             file.FileName = fileName;
                             file.FileSize = fileSize;
 
-                            // Storage is full, or is in cleaning mode
+                            // Storage is full
                             if (!storageService.TrySendFile(file))
                             {
-                                _log.Warn("Storage is full!");
+                                _log.Warn("Can't upload the file. Storage is full!\n");
+                            }
+                            else
+                            {
+                                _log.Info("File uploaded successfully!\n");
                             }
                             break;
                         case OperationType.Download:
                             // Generate file number
                             int fileCount = storageService.GetFileCount();
-                            int rngFileNumber = rng.Next(0, fileCount);
+                            int rngFileNumber = rng.Next(fileCount);
 
                             if (storageService.TryGetFile(rngFileNumber) is null)
                             {
                                 // File does not exist
-                                _log.Warn("File with number " + rngFileNumber + " doesn't exist!");
+                                _log.Warn($"File with index {rngFileNumber} doesn't exist!\n");
+                            }
+                            else
+                            {
+                                _log.Info($"File with index {rngFileNumber} downloaded successfully!\n");
                             }
                             break;
                         default:

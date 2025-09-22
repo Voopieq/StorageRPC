@@ -44,7 +44,7 @@ class Cleaner
     {
         ConfigureLogging();
 
-        _log.Info("It's a new day to start cleaning bits!");
+        _log.Info("It's a new day to start cleaning bits!\n");
 
         Random rng = new Random();
 
@@ -84,7 +84,7 @@ class Cleaner
                         {
                             // Reset cleaner state if storage stopped cleaning
                             storageService.ChangeCleanerState(cleanerData.Id, true);
-                            _log.Info($"Cleaner {cleanerData.Id} reset.");
+                            _log.Info($"Cleaner {cleanerData.Id} reset.\n");
                         }
                         continue;
                     }
@@ -96,13 +96,13 @@ class Cleaner
                         Thread.Sleep(rng.Next(1500));
                         _log.Info("Retrieving a file from storage and deleting it...");
 
-                        if (storageService.TryGetOldestFile())
+                        if (storageService.TryRemoveOldestFile())
                         {
-                            _log.Info("File successfully deleted!");
+                            _log.Info("File successfully deleted!\n");
                         }
                         else
                         {
-                            _log.Error("File has already been deleted!. Resuming work.");
+                            _log.Error("File has already been deleted!. Resuming work.\n");
                         }
                         storageService.ChangeCleanerState(cleanerData.Id, true);
                         hasCleanedThisCycle = true;

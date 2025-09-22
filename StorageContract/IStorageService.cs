@@ -54,7 +54,7 @@ public interface IStorageService
     /// Gets the oldest file from storage.
     /// </summary>
     /// <returns>Oldest file.</returns>
-    bool TryGetOldestFile();
+    bool TryRemoveOldestFile();
 
     /// <summary>
     /// Deletes provided file from the storage.

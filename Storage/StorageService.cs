@@ -31,9 +31,9 @@ public class StorageService : IStorageService
         return _storageLogic.TryGetFile(fileNumber);
     }
 
-    public bool TryGetOldestFile()
+    public bool TryRemoveOldestFile()
     {
-        return _storageLogic.TryGetOldestFile();
+        return _storageLogic.TryRemoveOldestFile();
     }
 
     public bool DeleteFile(FileDesc file)
