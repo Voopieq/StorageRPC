@@ -76,7 +76,7 @@ class Cleaner
                 {
                     Thread.Sleep(1000);
 
-                    // TODO: If storage is empty, reset status.
+                    // If storage is not in cleaning mode, reset cleaner status
                     if (!storageService.IsCleaningMode())
                     {
                         hasCleanedThisCycle = false;
@@ -84,7 +84,7 @@ class Cleaner
                         {
                             // Reset cleaner state if storage stopped cleaning
                             storageService.ChangeCleanerState(cleanerData.Id, true);
-                            _log.Info($"Cleaner {cleanerData.Id} reset (no cleaning mode).");
+                            _log.Info($"Cleaner {cleanerData.Id} reset.");
                         }
                         continue;
                     }
@@ -99,6 +99,10 @@ class Cleaner
                         if (storageService.TryGetOldestFile())
                         {
                             _log.Info("File successfully deleted!");
+                        }
+                        else
+                        {
+                            _log.Error("File has already been deleted!. Resuming work.");
                         }
                         storageService.ChangeCleanerState(cleanerData.Id, true);
                         hasCleanedThisCycle = true;

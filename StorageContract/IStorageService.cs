@@ -63,6 +63,11 @@ public interface IStorageService
     /// <returns>True if file has been deleted. False otherwise.</returns>
     bool DeleteFile(FileDesc file);
 
+    /// <summary>
+    /// Tells if cleaner is done cleaning or not.
+    /// </summary>
+    /// <param name="cleanerID">Cleaner's ID.</param>
+    /// <returns>True, if cleaner is done cleaning. False otherwise.</returns>
     bool GetCleanerState(string cleanerID);
 
     /// <summary>
@@ -96,6 +101,11 @@ public interface IStorageService
     /// <returns>True if cleaning mode is active. False otherwise.</returns>
     bool IsCleaningMode();
 
+    /// <summary>
+    /// Changes cleaner state IsDoneCleaning to 'state' parameter.
+    /// </summary>
+    /// <param name="cleanerID">Cleaner's ID.</param>
+    /// <param name="state">State to put the cleaner in. True to make it done cleaning.</param>
     void ChangeCleanerState(string cleanerID, bool state);
 }
 

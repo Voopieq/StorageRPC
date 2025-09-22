@@ -92,7 +92,7 @@ class Client
                     {
                         case OperationType.Upload:
                             // Generate file info
-                            int fileSize = rng.Next(1, 300);
+                            int fileSize = rng.Next(300, 300);
                             string fileName = Guid.NewGuid().ToString();
 
                             file.FileName = fileName;

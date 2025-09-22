@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("StorageContract")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+16f8860a1da1516a5531960e8501beaedcfc381c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+15870c4da72075c637a5e2e3c3c026c278533be3")]
 [assembly: System.Reflection.AssemblyProductAttribute("StorageContract")]
 [assembly: System.Reflection.AssemblyTitleAttribute("StorageContract")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

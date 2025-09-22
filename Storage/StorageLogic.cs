@@ -134,6 +134,7 @@ class StorageLogic
         }
     }
 
+    // TODO: This removes the file. Change function name.
     public bool TryGetOldestFile()
     {
         lock (_state.AccessLock)
@@ -193,10 +194,9 @@ class StorageLogic
             {
                 if (_state.IsCleaningMode)
                 {
-                    // Storage is still not empty. Continue
                     if (_state.CurrentSize == 0 || _state.Cleaners.TrueForAll(cleaner => cleaner.IsDoneCleaning))
                     {
-                        // Storage is empty. Change state
+                        // Storage is empty. Reset the state
                         _log.Info("Cleaning finished. Switching off cleaning mode.");
                         _state.IsCleaningMode = false;
                         counter = 0;
@@ -212,6 +212,7 @@ class StorageLogic
                     continue;
                 }
 
+                // Storage is full
                 counter++;
                 _log.Warn($"Storage is full! ({counter}/3");
 
@@ -219,7 +220,7 @@ class StorageLogic
                 {
                     // Activate cleaners
                     _state.IsCleaningMode = true;
-                    _log.Info("Storage is in cleaning mode...");
+                    _log.Info("Activating storage cleaning mode...");
                     // if (_state.CurrentSize <= 0)
                     // {
                     //     _log.Info("Storage has been fully cleaned!");
