@@ -7,27 +7,48 @@ using Services;
 public class StorageState
 {
     public readonly object AccessLock = new();
-    public int StorageCapacity = 200; // Total storage size, MB
+    public int StorageCapacity = 100; // Total storage size, MB
     public int CurrentSize = 0;   // How much space occupied
     public bool IsCleaningMode = false;
     public List<CleanerData> Cleaners = new List<CleanerData>(); // Cleaners. Key = cleanerID, Value = bool (done cleaning or not)
     public List<FileDesc> FilesList = new List<FileDesc>();
 }
 
-
+/// <summary>
+/// Storage logic.
+/// </summary>
 class StorageLogic
 {
+    /// <summary>
+    /// Logger for this class.
+    /// </summary>
     private Logger _log = LogManager.GetCurrentClassLogger();
+
+    /// <summary>
+    /// Background task thread.
+    /// </summary>
     private Thread _bgTaskThread;
+
+    /// <summary>
+    /// State descriptor.
+    /// </summary>
     private StorageState _state = new StorageState();
 
+    /// <summary>
+    /// Constructor.
+    /// </summary>
     public StorageLogic()
     {
-        // CHECK PERIODICALLY IN THIS THREAD IF STORAGE IS FULL
+        // CHECK PERIODICALLY IN THIS THREAD IF STORAGE IS FULL.
         _bgTaskThread = new Thread(BackgroundTask);
         _bgTaskThread.Start();
     }
 
+    /// <summary>
+    /// Add a cleaner to the list.
+    /// </summary>
+    /// <param name="cleaner">Cleaner to add.</param>
+    /// <returns>True if added successfully. False otherwise.</returns>
     public void AddToCleanersList(CleanerData cleaner)
     {
         lock (_state.AccessLock)
@@ -36,18 +57,11 @@ class StorageLogic
         }
     }
 
-    public bool RemoveCleaner(CleanerData cleaner)
-    {
-        lock (_state.AccessLock)
-        {
-            if (_state.Cleaners.Remove(cleaner))
-            {
-                return true;
-            }
-            return false;
-        }
-    }
-
+    /// <summary>
+    /// Tells if cleaner is done cleaning or not.
+    /// </summary>
+    /// <param name="cleanerID">Cleaner's ID.</param>
+    /// <returns>True, if cleaner is done cleaning. False otherwise.</returns>
     public bool GetCleanerState(string cleanerID)
     {
         lock (_state.AccessLock)
@@ -56,6 +70,11 @@ class StorageLogic
         }
     }
 
+    /// <summary>
+    /// Changes cleaner state IsDoneCleaning to 'state' parameter.
+    /// </summary>
+    /// <param name="cleanerID">Cleaner's ID.</param>
+    /// <param name="state">State to put the cleaner in. True to make it done cleaning.</param>
     public void ChangeCleanerState(string cleanerID, bool state)
     {
         lock (_state.AccessLock)
@@ -68,6 +87,10 @@ class StorageLogic
         }
     }
 
+    /// <summary>
+    /// Gets total file count in the storage.
+    /// </summary>
+    /// <returns>File count in storage.</returns>
     public int GetFileCount()
     {
         lock (_state.AccessLock)
@@ -76,14 +99,10 @@ class StorageLogic
         }
     }
 
-    public bool IsStorageFull()
-    {
-        lock (_state.AccessLock)
-        {
-            return _state.CurrentSize < _state.StorageCapacity;
-        }
-    }
-
+    /// <summary>
+    /// Tells if cleaning mode has been activated
+    /// </summary>
+    /// <returns>True if cleaning mode is active. False otherwise.</returns>
     public bool IsCleaningMode()
     {
         lock (_state.AccessLock)
@@ -92,6 +111,11 @@ class StorageLogic
         }
     }
 
+    /// <summary>
+    /// Allows to send the file to storage if there is enough space.
+    /// </summary>
+    /// <param name="file">File to store.</param>
+    /// <returns>True if file successfully stored, false otherwise.</returns>
     public bool TrySendFile(FileDesc file)
     {
         lock (_state.AccessLock)
@@ -112,6 +136,10 @@ class StorageLogic
         }
     }
 
+    /// <summary>
+    /// Allows to request a file to be received from the server.
+    /// </summary>
+    /// <returns>File descriptor.</returns>
     public FileDesc? TryGetFile(int idx)
     {
         lock (_state.AccessLock)
@@ -119,9 +147,9 @@ class StorageLogic
             FileDesc? file = _state.FilesList.ElementAtOrDefault(idx);
             if (file != null)
             {
-                _log.Info($"Found a file with index {idx}. Passing it to client and removing from storage. New storage size: {_state.CurrentSize}.\n");
                 _state.FilesList.Remove(file);
                 _state.CurrentSize -= file.FileSize;
+                _log.Info($"Found a file with index {idx}. Passing it to client and removing from storage. New storage size: {_state.CurrentSize}.\n");
                 return file;
             }
 
@@ -131,6 +159,10 @@ class StorageLogic
         }
     }
 
+    /// <summary>
+    /// Gets the oldest file from storage.
+    /// </summary>
+    /// <returns>Oldest file.</returns>
     public bool TryRemoveOldestFile()
     {
         lock (_state.AccessLock)
@@ -149,27 +181,6 @@ class StorageLogic
         }
     }
 
-    public bool DeleteFile(FileDesc file)
-    {
-        lock (_state.AccessLock)
-        {
-            if (file is null)
-            {
-                _log.Error("Trying to delete a null file!\n");
-                return false;
-            }
-
-            if (_state.FilesList.RemoveAll(f => f.FileName == file.FileName) == 0)
-            {
-                _log.Error("File doesn't exist in storage!\n");
-                return false;
-            }
-
-            _state.CurrentSize -= file.FileSize;
-            return true;
-        }
-    }
-
     /// <summary>
     /// Periodically checks if storage is full
     /// </summary>
@@ -182,16 +193,13 @@ class StorageLogic
         {
             Thread.Sleep(1000);
 
-            //_log.Info("Sleeping some more");
-
-
             lock (_state.AccessLock)
             {
                 if (_state.IsCleaningMode)
                 {
                     if (_state.CurrentSize == 0 || _state.Cleaners.TrueForAll(cleaner => cleaner.IsDoneCleaning))
                     {
-                        // Storage is empty. Reset the state
+                        // Storage is empty, or all cleaners are finished. Reset the state
                         _log.Info("Cleaning finished. Switching off cleaning mode.\n");
                         _state.IsCleaningMode = false;
                         counter = 0;
@@ -199,6 +207,7 @@ class StorageLogic
                     continue;
                 }
 
+                // Storage is not full. Continue the loop.
                 if (_state.CurrentSize <= _state.StorageCapacity)
                 {
                     counter = 0;

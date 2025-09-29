@@ -19,8 +19,14 @@ class Cleaner
     /// </summary>
     Logger _log = LogManager.GetCurrentClassLogger();
 
+    /// <summary>
+    /// New empty instance of Cleaner data.
+    /// </summary>
     CleanerData cleanerData = new CleanerData();
 
+    /// <summary>
+    ///  Has the user already cleaned this cycle?
+    /// </summary>
     bool hasCleanedThisCycle = false;
 
     /// <summary>
@@ -40,20 +46,27 @@ class Cleaner
         LogManager.Configuration = config;
     }
 
+    /// <summary>
+    /// Program body.
+    /// </summary>
     private void Run()
     {
         ConfigureLogging();
 
         _log.Info("It's a new day to start cleaning bits!\n");
 
+        // Random number to use for sleeping.
         Random rng = new Random();
 
+        // Run everything in a loop to recover from connection errors
         while (true)
         {
             try
             {
+                //connect to the server, get service client proxy
                 var sc = new ServiceCollection();
 
+                // Connection to the server
                 sc.AddSimpleRpcClient("storageService", new HttpClientTransportOptions
                 {
                     Url = "http://127.0.0.1:5000/filestoragerpc",
@@ -66,9 +79,11 @@ class Cleaner
 
                 var storageService = sp.GetService<IStorageService>();
 
+                // Initialize cleaner data.
                 cleanerData = new CleanerData();
+                // Generate unique ID.
                 cleanerData.Id = Guid.NewGuid().ToString();
-
+                // Add cleaner to the list in server.
                 storageService.AddToCleanersList(cleanerData);
 
                 // Cleaner stuff
@@ -76,19 +91,24 @@ class Cleaner
                 {
                     Thread.Sleep(1000);
 
-                    // If storage is not in cleaning mode, reset cleaner status
+                    // If storage is not in cleaning mode, reset cleaner status.
                     if (!storageService.IsCleaningMode())
                     {
+                        // Reset cleaner's status.
                         hasCleanedThisCycle = false;
+                        // Cleaner was not reset on the server. Do it now.
                         if (!storageService.GetCleanerState(cleanerData.Id))
                         {
-                            // Reset cleaner state if storage stopped cleaning
+                            // Reset cleaner state if storage stopped cleaning.
                             storageService.ChangeCleanerState(cleanerData.Id, true);
                             _log.Info($"Cleaner {cleanerData.Id} reset.\n");
                         }
+
+                        _log.Info("Nothing to clean right now.");
                         continue;
                     }
 
+                    // Cleaner is doing nothing and hasn't cleaned this cycle
                     if (storageService.GetCleanerState(cleanerData.Id) && !hasCleanedThisCycle)
                     {
                         // Do the cleaning
@@ -96,6 +116,7 @@ class Cleaner
                         Thread.Sleep(rng.Next(1500));
                         _log.Info("Retrieving a file from storage and deleting it...");
 
+                        // Try to remove oldest file.
                         if (storageService.TryRemoveOldestFile())
                         {
                             _log.Info("File successfully deleted!\n");
@@ -120,6 +141,10 @@ class Cleaner
         }
     }
 
+    /// <summary>
+    /// Program entry point.
+    /// </summary>
+    /// <param name="args">Command line arguments.</param>
     public static void Main(string[] args)
     {
         Cleaner self = new Cleaner();

@@ -2,7 +2,9 @@
 
 namespace Services;
 
-
+/// <summary>
+/// Contains information about file.
+/// </summary>
 public class FileDesc
 {
     /// <summary>
@@ -21,9 +23,19 @@ public class FileDesc
     public int FileSize { get; set; }
 }
 
+/// <summary>
+/// Contains information about cleaner.
+/// </summary>
 public class CleanerData
 {
+    /// <summary>
+    /// Cleaner's unique ID.
+    /// </summary>
     public string Id;
+
+    /// <summary>
+    /// Cleaner's status, whether he is done cleaning or not.
+    /// </summary>
     public bool IsDoneCleaning = true;
 }
 
@@ -57,13 +69,6 @@ public interface IStorageService
     bool TryRemoveOldestFile();
 
     /// <summary>
-    /// Deletes provided file from the storage.
-    /// </summary>
-    /// <param name="file">File to delete.</param>
-    /// <returns>True if file has been deleted. False otherwise.</returns>
-    bool DeleteFile(FileDesc file);
-
-    /// <summary>
     /// Tells if cleaner is done cleaning or not.
     /// </summary>
     /// <param name="cleanerID">Cleaner's ID.</param>
@@ -71,29 +76,10 @@ public interface IStorageService
     bool GetCleanerState(string cleanerID);
 
     /// <summary>
-    /// Gets file from the storage.
-    /// </summary>
-    /// <returns>File.</returns>
-    FileDesc GetFile();
-
-    /// <summary>
     /// Gets total file count in the storage.
     /// </summary>
     /// <returns>File count in storage.</returns>
     int GetFileCount();
-
-    /// <summary>
-    /// Tells if the storage is full or not.
-    /// </summary>
-    /// <returns>True if storage is full. False otherwise.</returns> 
-    bool IsStorageFull();
-
-    /// <summary>
-    /// Tells if provided file is in storage.
-    /// </summary>
-    /// <param name="file">User's generated file.</param>
-    /// <returns>True if file exists in storage. False otherwise.</returns>
-    bool IsFileInStorage(FileDesc file);
 
     /// <summary>
     /// Tells if cleaning mode has been activated

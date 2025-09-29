@@ -28,6 +28,9 @@ class Client
     /// </summary>
     Logger _log = LogManager.GetCurrentClassLogger();
 
+    /// <summary>
+    /// Enum to keep track of current operation type.
+    /// </summary>
     OperationType operationType;
 
     /// <summary>
@@ -47,19 +50,25 @@ class Client
         LogManager.Configuration = config;
     }
 
+    /// <summary>
+    /// Program body.
+    /// </summary>
     private void Run()
     {
         ConfigureLogging();
 
-        // Does the user want to download or upload the file. Use 0 for download, 1 for upload.
+        // Does the user want to download or upload the file. 0 for download, 1 for upload.
         Random rng = new Random();
 
+        // Run everything in a loop to recover from connection errors
         while (true)
         {
             try
             {
+                //connect to the server, get service client proxy
                 var sc = new ServiceCollection();
 
+                // Connection to the server
                 sc.AddSimpleRpcClient("storageService", new HttpClientTransportOptions
                 {
                     Url = "http://127.0.0.1:5000/filestoragerpc",
@@ -72,33 +81,36 @@ class Client
 
                 var storageService = sp.GetService<IStorageService>();
 
+                // Initialize file descriptor.
                 FileDesc file = new FileDesc();
 
                 // User cycle
                 while (true)
                 {
-                    Thread.Sleep(2000 + rng.Next(1500));
+                    Thread.Sleep(2000 + rng.Next(1000));
 
+                    // Storage is in cleaning mode. Pause the user.
                     if (storageService.IsCleaningMode())
                     {
                         _log.Warn("Storage is in cleaning mode. Waiting for it to finish...\n");
                         continue;
                     }
 
-                    operationType = (OperationType)rng.Next(1, 1);
+                    // Determine what to do: upload or download.
+                    operationType = (OperationType)rng.Next(0, 2);
                     _log.Info("I decided to " + operationType + " the file.");
 
                     switch (operationType)
                     {
                         case OperationType.Upload:
                             // Generate file info
-                            int fileSize = rng.Next(20, 100);
+                            int fileSize = rng.Next(20, 50);
                             string fileName = Guid.NewGuid().ToString();
 
                             file.FileName = fileName;
                             file.FileSize = fileSize;
 
-                            // Storage is full
+                            // Try to upload the file.
                             if (!storageService.TrySendFile(file))
                             {
                                 _log.Warn("Can't upload the file. Storage is full!\n");
@@ -113,6 +125,7 @@ class Client
                             int fileCount = storageService.GetFileCount();
                             int rngFileNumber = rng.Next(fileCount);
 
+                            // Try to download the file.
                             if (storageService.TryGetFile(rngFileNumber) is null)
                             {
                                 // File does not exist
@@ -138,7 +151,10 @@ class Client
         }
     }
 
-
+    /// <summary>
+    /// Program entry point.
+    /// </summary>
+    /// <param name="args"></param>
     public static void Main(string[] args)
     {
         var self = new Client();

@@ -35,12 +35,20 @@ public class Server
         LogManager.Configuration = config;
     }
 
+    /// <summary>
+    /// Program entry point.
+    /// </summary>
+    /// <param name="args">Command line arguments.</param>
     public static void Main(string[] args)
     {
         var self = new Server();
         self.Run(args);
     }
 
+    /// <summary>
+    /// Program body.
+    /// </summary>
+    /// <param name="args">Command line arguments.</param>
     private void Run(string[] args)
     {
         ConfigureLogging();
@@ -50,23 +58,34 @@ public class Server
         StartServer(args);
     }
 
+    /// <summary>
+    /// Starts integrated server.
+    /// </summary>
+    /// <param name="args">Command line arguments.</param>
     private void StartServer(string[] args)
     {
+        ///create web app builder
         var builder = WebApplication.CreateBuilder(args);
 
+        //configure integrated server
         builder.WebHost.ConfigureKestrel(opts =>
         {
             opts.Listen(IPAddress.Loopback, 5000);
         });
 
+        //add SimpleRPC services
         builder.Services.AddSimpleRpcServer(new HttpServerTransportOptions { Path = "/filestoragerpc" }).AddSimpleRpcHyperionSerializer();
 
+        //add our custom service
         builder.Services.AddSingleton<IStorageService>(new StorageService());
 
+        //build the server
         var app = builder.Build();
 
+        //add SimpleRPC middleware
         app.UseSimpleRpcServer();
 
+        //run the server
         app.Run();
     }
 }
