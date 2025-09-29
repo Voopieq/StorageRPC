@@ -12,9 +12,6 @@ obj/
 # Rider / JetBrains IDE
 .idea/
 
-# VSCode
-.vscode/
-
 # NuGet
 *.nupkg
 *.snupkg
