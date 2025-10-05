@@ -162,7 +162,7 @@ class StorageLogic
     /// <summary>
     /// Gets the oldest file from storage.
     /// </summary>
-    /// <returns>Oldest file.</returns>
+    /// <returns>True if file has been removed. False otherwise.</returns>
     public bool TryRemoveOldestFile()
     {
         lock (_state.AccessLock)
@@ -178,6 +178,57 @@ class StorageLogic
             _state.CurrentSize -= file.FileSize;
             _log.Info("Oldest file removed. New storage size: " + _state.CurrentSize);
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Gets the oldest file from storage.
+    /// </summary>
+    /// <param name="cleanerID">Cleaner's ID who wants to clean.</param>
+    /// <returns>True if file has been removed. False otherwise.</returns>
+    public bool TryRemoveOldestFile(string cleanerID)
+    {
+        lock (_state.AccessLock)
+        {
+            if (_state.FilesList.Count <= 0)
+            {
+                _log.Error("There are no files in the storage to return!\n");
+                return false;
+            }
+
+            // Get the cleaner
+            CleanerData? cleaner = null;
+            foreach (CleanerData cleanerData in _state.Cleaners)
+            {
+                if (cleanerData.Id == cleanerID)
+                {
+                    cleaner = cleanerData;
+                    break;
+                }
+            }
+
+            // If the cleaner exists, remove the file and change cleaners status.
+            if (cleaner != null)
+            {
+                cleaner.IsDoneCleaning = false;
+
+                FileDesc file = _state.FilesList[0];
+                if (_state.FilesList.Remove(file))
+                {
+                    _state.CurrentSize -= file.FileSize;
+                    cleaner.IsDoneCleaning = true;
+                    _log.Info("Oldest file removed. New storage size: " + _state.CurrentSize);
+                    return true;
+                }
+                else
+                {
+                    cleaner.IsDoneCleaning = true;
+                    return false;
+                }
+            }
+
+            // Cleaner was not found. Do not remove the file.
+            return false;
         }
     }
 

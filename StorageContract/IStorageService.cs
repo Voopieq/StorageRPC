@@ -69,6 +69,13 @@ public interface IStorageService
     bool TryRemoveOldestFile();
 
     /// <summary>
+    /// Gets the oldest file from storage.
+    /// </summary>
+    /// <param name="cleanerID">Cleaner's ID who wants to clean.</param>
+    /// <returns>True if file has been removed. False otherwise.</returns>
+    bool TryRemoveOldestFile(string cleanerID);
+
+    /// <summary>
     /// Tells if cleaner is done cleaning or not.
     /// </summary>
     /// <param name="cleanerID">Cleaner's ID.</param>

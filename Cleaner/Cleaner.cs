@@ -94,15 +94,8 @@ class Cleaner
                     // If storage is not in cleaning mode, reset cleaner status.
                     if (!storageService.IsCleaningMode())
                     {
-                        // Reset cleaner's status.
+                        // Reset cleaner's local status.
                         hasCleanedThisCycle = false;
-                        // Cleaner was not reset on the server. Do it now.
-                        if (!storageService.GetCleanerState(cleanerData.Id))
-                        {
-                            // Reset cleaner state if storage stopped cleaning.
-                            storageService.ChangeCleanerState(cleanerData.Id, true);
-                            _log.Info($"Cleaner {cleanerData.Id} reset.\n");
-                        }
 
                         _log.Info("Nothing to clean right now.");
                         continue;
@@ -112,12 +105,11 @@ class Cleaner
                     if (storageService.GetCleanerState(cleanerData.Id) && !hasCleanedThisCycle)
                     {
                         // Do the cleaning
-                        storageService.ChangeCleanerState(cleanerData.Id, false);
                         Thread.Sleep(rng.Next(1500));
                         _log.Info("Retrieving a file from storage and deleting it...");
 
                         // Try to remove oldest file.
-                        if (storageService.TryRemoveOldestFile())
+                        if (storageService.TryRemoveOldestFile(cleanerData.Id))
                         {
                             _log.Info("File successfully deleted!\n");
                         }
@@ -125,11 +117,8 @@ class Cleaner
                         {
                             _log.Error("File has already been deleted!. Resuming work.\n");
                         }
-                        storageService.ChangeCleanerState(cleanerData.Id, true);
                         hasCleanedThisCycle = true;
                     }
-
-
                 }
             }
             catch (Exception e)
