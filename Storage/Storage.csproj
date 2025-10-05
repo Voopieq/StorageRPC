@@ -8,10 +8,16 @@
 
   <ItemGroup>
     <PackageReference Include="NLog" Version="6.0.4" />
-    <PackageReference Include="SimpleRpc" Version="1.0.0-beta1" />
-    <PackageReference Include="SimpleRpc.Serialization.Hyperion" Version="1.0.0-beta1" />
+    <PackageReference Include="NSwag.AspNetCore" Version="14.6.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
+
+  	<PropertyGroup>
+		<!-- This instructs compiler to generate XML documentation file that is used to provided swagger doc with comments. -->
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<!-- This silinces warnings for missing XML comments. -->
+		<NoWarn>$(NoWarn);1591</NoWarn>
+	</PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\StorageContract\StorageContract.csproj" />

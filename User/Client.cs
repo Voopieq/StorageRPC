@@ -1,16 +1,12 @@
 ﻿namespace Clients;
 
 using Microsoft.Extensions.DependencyInjection;
-
-using SimpleRpc.Transports;
-using SimpleRpc.Transports.Http.Server;
-using SimpleRpc.Serialization.Hyperion;
+using System.Net.Http;
 
 using NLog;
-using Services;
 using NLog.Targets;
-using SimpleRpc.Transports.Http.Client;
-using System.Data.SqlTypes;
+
+using Services;
 
 class Client
 {
@@ -66,20 +62,7 @@ class Client
             try
             {
                 //connect to the server, get service client proxy
-                var sc = new ServiceCollection();
-
-                // Connection to the server
-                sc.AddSimpleRpcClient("storageService", new HttpClientTransportOptions
-                {
-                    Url = "http://127.0.0.1:5000/filestoragerpc",
-                    Serializer = "HyperionMessageSerializer"
-                }).AddSimpleRpcHyperionSerializer();
-
-                sc.AddSimpleRpcProxy<IStorageService>("storageService");
-
-                var sp = sc.BuildServiceProvider();
-
-                var storageService = sp.GetService<IStorageService>();
+                var storageService = new StorageClient("http://127.0.0.1:5000", new HttpClient());
 
                 // Initialize file descriptor.
                 FileDesc file = new FileDesc();
@@ -97,14 +80,14 @@ class Client
                     }
 
                     // Determine what to do: upload or download.
-                    operationType = (OperationType)rng.Next(0, 2);
+                    operationType = (OperationType)rng.Next(1, 1);
                     _log.Info("I decided to " + operationType + " the file.");
 
                     switch (operationType)
                     {
                         case OperationType.Upload:
                             // Generate file info
-                            int fileSize = rng.Next(20, 50);
+                            int fileSize = rng.Next(101, 101);
                             string fileName = Guid.NewGuid().ToString();
 
                             file.FileName = fileName;
@@ -126,7 +109,8 @@ class Client
                             int rngFileNumber = rng.Next(fileCount);
 
                             // Try to download the file.
-                            if (storageService.TryGetFile(rngFileNumber) is null)
+                            file = storageService.TryGetFile(rngFileNumber);
+                            if (file.FileName == string.Empty && file.FileSize == 0)
                             {
                                 // File does not exist
                                 _log.Warn($"File with index {rngFileNumber} doesn't exist!\n");

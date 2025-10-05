@@ -1,16 +1,12 @@
 ﻿namespace Cleaner;
 
 using Microsoft.Extensions.DependencyInjection;
-
-using SimpleRpc.Transports;
-using SimpleRpc.Transports.Http.Server;
-using SimpleRpc.Serialization.Hyperion;
+using System.Net.Http;
 
 using NLog;
-using Services;
 using NLog.Targets;
-using SimpleRpc.Transports.Http.Client;
-using System.Data.SqlTypes;
+
+using Services;
 
 class Cleaner
 {
@@ -64,20 +60,7 @@ class Cleaner
             try
             {
                 //connect to the server, get service client proxy
-                var sc = new ServiceCollection();
-
-                // Connection to the server
-                sc.AddSimpleRpcClient("storageService", new HttpClientTransportOptions
-                {
-                    Url = "http://127.0.0.1:5000/filestoragerpc",
-                    Serializer = "HyperionMessageSerializer"
-                }).AddSimpleRpcHyperionSerializer();
-
-                sc.AddSimpleRpcProxy<IStorageService>("storageService");
-
-                var sp = sc.BuildServiceProvider();
-
-                var storageService = sp.GetService<IStorageService>();
+                var storageService = new StorageClient("http://127.0.0.1:5000", new HttpClient());
 
                 // Initialize cleaner data.
                 cleanerData = new CleanerData();
