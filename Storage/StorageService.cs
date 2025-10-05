@@ -1,7 +1,8 @@
 namespace Servers;
 
 using Grpc.Core;
-
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Services;
 
 public class StorageService : Services.TrafficLight.TrafficLightBase
@@ -12,18 +13,25 @@ public class StorageService : Services.TrafficLight.TrafficLightBase
     /// Gets total file count in the storage.
     /// </summary>
     /// <returns>File count in storage.</returns>
-    public int GetFileCount()
+    public override Task<IntMsg> GetFileCount(Empty input, ServerCallContext context)
     {
-        return _storageLogic.GetFileCount();
+        var result = new IntMsg { Value = _storageLogic.GetFileCount() };
+        return Task.FromResult(result);
     }
 
     /// <summary>
     /// Allows to request a file to be received from the server.
     /// </summary>
     /// <returns>File descriptor.</returns>
-    public FileDesc TryGetFile(int fileNumber)
+    public override Task<FileDesc> TryGetFile(IntMsg input, ServerCallContext context)
     {
-        return _storageLogic.TryGetFile(fileNumber);
+        var file = _storageLogic.TryGetFile(input.Value);
+        var result = new FileDesc
+        {
+            FileName = file.FileName,
+            FileSize = file.FileSize
+        };
+        return Task.FromResult(result);
     }
 
     /// <summary>
@@ -31,9 +39,10 @@ public class StorageService : Services.TrafficLight.TrafficLightBase
     /// </summary>
     /// <param name="cleanerID">Cleaner's ID who wants to clean.</param>
     /// <returns>True if file has been removed. False otherwise.</returns>
-    public bool TryRemoveOldestFile(string cleanerID)
+    public override Task<BoolMsg> TryRemoveOldestFile(StringMsg input, ServerCallContext context)
     {
-        return _storageLogic.TryRemoveOldestFile(cleanerID);
+        var result = new BoolMsg { Value = _storageLogic.TryRemoveOldestFile(input.Value) };
+        return Task.FromResult(result);
     }
 
     /// <summary>
@@ -41,9 +50,10 @@ public class StorageService : Services.TrafficLight.TrafficLightBase
     /// </summary>
     /// <param name="cleanerID">Cleaner's ID.</param>
     /// <returns>True, if cleaner is done cleaning. False otherwise.</returns>
-    public bool GetCleanerState(string cleanerID)
+    public override Task<BoolMsg> GetCleanerState(StringMsg input, ServerCallContext context)
     {
-        return _storageLogic.GetCleanerState(cleanerID);
+        var result = new BoolMsg { Value = _storageLogic.GetCleanerState(input.Value) };
+        return Task.FromResult(result);
     }
 
     /// <summary>
@@ -51,18 +61,27 @@ public class StorageService : Services.TrafficLight.TrafficLightBase
     /// </summary>
     /// <param name="file">File to store.</param>
     /// <returns>True if file successfully stored, false otherwise.</returns>
-    public bool TrySendFile(FileDesc file)
+    public override Task<BoolMsg> TrySendFile(Services.FileDesc input, ServerCallContext context)
     {
-        return _storageLogic.TrySendFile(file);
+        var file = new FileDesc
+        {
+            FileName = input.FileName,
+            FileSize = input.FileSize
+        };
+
+        var logicResult = _storageLogic.TrySendFile(file);
+        var result = new BoolMsg { Value = logicResult };
+        return Task.FromResult(result);
     }
 
     /// <summary>
     /// Tells if cleaning mode has been activated
     /// </summary>
     /// <returns>True if cleaning mode is active. False otherwise.</returns>
-    public bool IsCleaningMode()
+    public override Task<BoolMsg> IsCleaningMode(Empty input, ServerCallContext context)
     {
-        return _storageLogic.IsCleaningMode();
+        var result = new BoolMsg { Value = _storageLogic.IsCleaningMode() };
+        return Task.FromResult(result);
     }
 
     /// <summary>
@@ -70,8 +89,16 @@ public class StorageService : Services.TrafficLight.TrafficLightBase
     /// </summary>
     /// <param name="cleaner">Cleaner to add.</param>
     /// <returns>True if added successfully. False otherwise.</returns>
-    public bool AddToCleanersList(CleanerData cleaner)
+    public override Task<BoolMsg> AddToCleanersList(Services.CleanerData cleaner, ServerCallContext context)
     {
-        return _storageLogic.AddToCleanersList(cleaner);
+        var cleanerData = new CleanerData
+        {
+            Id = cleaner.Id,
+            IsDoneCleaning = cleaner.IsDoneCleaning
+        };
+
+        var logicResult = _storageLogic.AddToCleanersList(cleanerData);
+        var result = new BoolMsg { Value = logicResult };
+        return Task.FromResult(result);
     }
 }
