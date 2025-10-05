@@ -1,0 +1,47 @@
+//set the language version
+syntax = "proto3";
+
+//this will translate into C# namespace
+package Services;
+
+// this will translate into service and service client stubs
+service Storage {
+    // these will translate into service operations
+    rpc AddToCleanersList(CleanerData) returns (BoolMsg)
+    rpc GetCleanerState(StringMsg) returns (BoolMsg)
+    rpc GetFileCount(Empty) returns (IntMsg)
+    rpc IsCleaningMode(Empty) returns (BoolMsg)
+    rpc TrySendFile(FileDesc) returns (BoolMsg)
+    rpc TryGetFile(IntMsg) returns (FileDesc)
+    rpc TryRemoveOldestFile(StringMsg) returns (BoolMsg)
+}
+
+//this is used for calls that do accept inputs or produce outputs
+message Empty {    
+}
+
+//single value structures
+message IntMsg {
+	int32 value = 1;
+}
+
+message BoolMsg {
+	bool value = 1;
+}
+
+message StringMsg {
+    string value = 1;
+}
+
+// Cleaner data
+message CleanerData {
+    int32 Id = 1;
+    bool IsDoneCleaning = 2;
+}
+
+// File descriptor
+message FileDesc {
+    int32 FileNumber = 1;
+    string FileName = 2;
+    int32 FileSize = 3;
+}

@@ -2,15 +2,10 @@
 
 using Microsoft.Extensions.DependencyInjection;
 
-using SimpleRpc.Transports;
-using SimpleRpc.Transports.Http.Server;
-using SimpleRpc.Serialization.Hyperion;
-
 using NLog;
+
+//this comes from GRPC generated code
 using Services;
-using NLog.Targets;
-using SimpleRpc.Transports.Http.Client;
-using System.Data.SqlTypes;
 
 class Client
 {
@@ -65,21 +60,9 @@ class Client
         {
             try
             {
-                //connect to the server, get service client proxy
-                var sc = new ServiceCollection();
-
-                // Connection to the server
-                sc.AddSimpleRpcClient("storageService", new HttpClientTransportOptions
-                {
-                    Url = "http://127.0.0.1:5000/filestoragerpc",
-                    Serializer = "HyperionMessageSerializer"
-                }).AddSimpleRpcHyperionSerializer();
-
-                sc.AddSimpleRpcProxy<IStorageService>("storageService");
-
-                var sp = sc.BuildServiceProvider();
-
-                var storageService = sp.GetService<IStorageService>();
+                //connect to the server, get service proxy
+                var channel = GrpcChannel.ForAddress("http://127.0.0.1:5000");
+                var storageService = new Storage.StorageClient(channel);
 
                 // Initialize file descriptor.
                 FileDesc file = new FileDesc();
@@ -126,7 +109,8 @@ class Client
                             int rngFileNumber = rng.Next(fileCount);
 
                             // Try to download the file.
-                            if (storageService.TryGetFile(rngFileNumber) is null)
+                            file = storageService.TryGetFile(rngFileNumber);
+                            if (file.FileName == string.Empty && file.FileSize == 0)
                             {
                                 // File does not exist
                                 _log.Warn($"File with index {rngFileNumber} doesn't exist!\n");
