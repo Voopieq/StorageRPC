@@ -7,13 +7,13 @@ package Services;
 // this will translate into service and service client stubs
 service Storage {
     // these will translate into service operations
-    rpc AddToCleanersList(CleanerData) returns (BoolMsg)
-    rpc GetCleanerState(StringMsg) returns (BoolMsg)
-    rpc GetFileCount(Empty) returns (IntMsg)
-    rpc IsCleaningMode(Empty) returns (BoolMsg)
-    rpc TrySendFile(FileDesc) returns (BoolMsg)
-    rpc TryGetFile(IntMsg) returns (FileDesc)
-    rpc TryRemoveOldestFile(StringMsg) returns (BoolMsg)
+    rpc AddToCleanersList(CleanerData) returns (BoolMsg);
+    rpc GetCleanerState(StringMsg) returns (BoolMsg);
+    rpc GetFileCount(Empty) returns (IntMsg);
+    rpc IsCleaningMode(Empty) returns (BoolMsg);
+    rpc TrySendFile(FileDesc) returns (BoolMsg);
+    rpc TryGetFile(IntMsg) returns (FileDesc);
+    rpc TryRemoveOldestFile(StringMsg) returns (BoolMsg);
 }
 
 //this is used for calls that do accept inputs or produce outputs
@@ -35,7 +35,7 @@ message StringMsg {
 
 // Cleaner data
 message CleanerData {
-    int32 Id = 1;
+    string Id = 1;
     bool IsDoneCleaning = 2;
 }
 

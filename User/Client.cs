@@ -3,6 +3,8 @@
 using Microsoft.Extensions.DependencyInjection;
 
 using NLog;
+using NLog.Targets;
+using Grpc.Net.Client;
 
 //this comes from GRPC generated code
 using Services;
@@ -73,7 +75,7 @@ class Client
                     Thread.Sleep(2000 + rng.Next(1000));
 
                     // Storage is in cleaning mode. Pause the user.
-                    if (storageService.IsCleaningMode())
+                    if (storageService.IsCleaningMode(new Empty()).Value)
                     {
                         _log.Warn("Storage is in cleaning mode. Waiting for it to finish...\n");
                         continue;
@@ -94,7 +96,7 @@ class Client
                             file.FileSize = fileSize;
 
                             // Try to upload the file.
-                            if (!storageService.TrySendFile(file))
+                            if (!storageService.TrySendFile(file).Value)
                             {
                                 _log.Warn("Can't upload the file. Storage is full!\n");
                             }
@@ -105,11 +107,11 @@ class Client
                             break;
                         case OperationType.Download:
                             // Generate file number
-                            int fileCount = storageService.GetFileCount();
+                            int fileCount = storageService.GetFileCount(new Empty()).Value;
                             int rngFileNumber = rng.Next(fileCount);
 
                             // Try to download the file.
-                            file = storageService.TryGetFile(rngFileNumber);
+                            file = storageService.TryGetFile(new IntMsg { Value = rngFileNumber });
                             if (file.FileName == string.Empty && file.FileSize == 0)
                             {
                                 // File does not exist

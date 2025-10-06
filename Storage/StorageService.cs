@@ -1,11 +1,10 @@
 namespace Servers;
 
 using Grpc.Core;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
+
 using Services;
 
-public class StorageService : Services.TrafficLight.TrafficLightBase
+public class StorageService : Services.Storage.StorageBase
 {
     private readonly StorageLogic _storageLogic = new StorageLogic();
 
@@ -23,10 +22,10 @@ public class StorageService : Services.TrafficLight.TrafficLightBase
     /// Allows to request a file to be received from the server.
     /// </summary>
     /// <returns>File descriptor.</returns>
-    public override Task<FileDesc> TryGetFile(IntMsg input, ServerCallContext context)
+    public override Task<Services.FileDesc> TryGetFile(IntMsg input, ServerCallContext context)
     {
         var file = _storageLogic.TryGetFile(input.Value);
-        var result = new FileDesc
+        var result = new Services.FileDesc
         {
             FileName = file.FileName,
             FileSize = file.FileSize

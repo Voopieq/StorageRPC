@@ -4,10 +4,6 @@ using System.Net;
 
 using NLog;
 
-using SimpleRpc.Transports;
-using SimpleRpc.Transports.Http.Server;
-using SimpleRpc.Serialization.Hyperion;
-
 using Services;
 using NLog.Targets;
 
@@ -64,7 +60,7 @@ public class Server
     /// <param name="args">Command line arguments.</param>
     private void StartServer(string[] args)
     {
-        ///create web app builder
+        //create web app builder
         var builder = WebApplication.CreateBuilder(args);
 
         //configure integrated server
@@ -73,17 +69,20 @@ public class Server
             opts.Listen(IPAddress.Loopback, 5000);
         });
 
-        //add SimpleRPC services
-        builder.Services.AddSimpleRpcServer(new HttpServerTransportOptions { Path = "/filestoragerpc" }).AddSimpleRpcHyperionSerializer();
+        //add support for GRPC services
+        builder.Services.AddGrpc();
 
-        //add our custom service
-        builder.Services.AddSingleton<IStorageService>(new StorageService());
+        //add the actual services
+        builder.Services.AddSingleton(new StorageService());
 
         //build the server
         var app = builder.Build();
 
-        //add SimpleRPC middleware
-        app.UseSimpleRpcServer();
+        //turn on request routing
+        app.UseRouting();
+
+        //configure routes
+        app.MapGrpcService<StorageService>();
 
         //run the server
         app.Run();
