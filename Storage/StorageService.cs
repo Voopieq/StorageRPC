@@ -62,6 +62,7 @@ public class StorageService : Services.Storage.StorageBase
     /// <returns>True if file successfully stored, false otherwise.</returns>
     public override Task<BoolMsg> TrySendFile(Services.FileDesc input, ServerCallContext context)
     {
+        //convert input to the format expected by logic
         var file = new FileDesc
         {
             FileName = input.FileName,
