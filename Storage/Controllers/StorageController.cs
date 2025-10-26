@@ -37,7 +37,7 @@ public class StorageController : ControllerBase
     /// Allows to request a file to be received from the server.
     /// </summary>
     /// <returns>File descriptor.</returns>
-    [HttpPost("/tryGetFile")]
+    [HttpGet("/tryGetFile")]
     public ActionResult<FileDesc> TryGetFile(int fileNumber)
     {
         return _storageLogic.TryGetFile(fileNumber);
@@ -69,7 +69,7 @@ public class StorageController : ControllerBase
     /// </summary>
     /// <param name="cleanerID">Cleaner's ID.</param>
     /// <returns>True, if cleaner is done cleaning. False otherwise.</returns>
-    [HttpPost("/getCleanerState")]
+    [HttpGet("/getCleanerState")]
     public ActionResult<bool> GetCleanerState(string cleanerID)
     {
         return _storageLogic.GetCleanerState(cleanerID);
