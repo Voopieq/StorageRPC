@@ -17,7 +17,7 @@ public class StorageState
 /// <summary>
 /// Storage logic.
 /// </summary>
-class StorageLogic
+class StorageLogic : IStorageService
 {
     /// <summary>
     /// Logger for this class.
@@ -44,16 +44,19 @@ class StorageLogic
         _bgTaskThread.Start();
     }
 
+
     /// <summary>
     /// Add a cleaner to the list.
     /// </summary>
     /// <param name="cleaner">Cleaner to add.</param>
     /// <returns>True if added successfully. False otherwise.</returns>
-    public void AddToCleanersList(CleanerData cleaner)
+    public bool AddToCleanersList(CleanerData cleaner)
     {
         lock (_state.AccessLock)
         {
+            cleaner.IsDoneCleaning = true;
             _state.Cleaners.Add(cleaner);
+            return true;
         }
     }
 
@@ -67,23 +70,6 @@ class StorageLogic
         lock (_state.AccessLock)
         {
             return _state.Cleaners.Find(cleaner => cleaner.Id == cleanerID).IsDoneCleaning;
-        }
-    }
-
-    /// <summary>
-    /// Changes cleaner state IsDoneCleaning to 'state' parameter.
-    /// </summary>
-    /// <param name="cleanerID">Cleaner's ID.</param>
-    /// <param name="state">State to put the cleaner in. True to make it done cleaning.</param>
-    public void ChangeCleanerState(string cleanerID, bool state)
-    {
-        lock (_state.AccessLock)
-        {
-            CleanerData cleaner = _state.Cleaners.Find(cleaner => cleaner.Id == cleanerID);
-            if (cleaner != null)
-            {
-                cleaner.IsDoneCleaning = state;
-            }
         }
     }
 
@@ -140,10 +126,16 @@ class StorageLogic
     /// Allows to request a file to be received from the server.
     /// </summary>
     /// <returns>File descriptor.</returns>
-    public FileDesc? TryGetFile(int idx)
+    public FileDesc TryGetFile(int idx)
     {
         lock (_state.AccessLock)
         {
+            if (_state.FilesList.Count <= 0)
+            {
+                _log.Error($"Storage is empty! No files to return.");
+                return new FileDesc();
+            }
+
             FileDesc? file = _state.FilesList.ElementAtOrDefault(idx);
             if (file != null)
             {
@@ -155,29 +147,7 @@ class StorageLogic
 
             // File doesn't exist. Return an empty object and an error.
             _log.Error($"File with index {idx} doesn't exist in the storage!\n");
-            return null;
-        }
-    }
-
-    /// <summary>
-    /// Gets the oldest file from storage.
-    /// </summary>
-    /// <returns>True if file has been removed. False otherwise.</returns>
-    public bool TryRemoveOldestFile()
-    {
-        lock (_state.AccessLock)
-        {
-            if (_state.FilesList.Count <= 0)
-            {
-                _log.Error("There are no files in the storage to return!\n");
-                return false;
-            }
-
-            FileDesc file = _state.FilesList[0];
-            _state.FilesList.Remove(file);
-            _state.CurrentSize -= file.FileSize;
-            _log.Info("Oldest file removed. New storage size: " + _state.CurrentSize);
-            return true;
+            return new FileDesc();
         }
     }
 

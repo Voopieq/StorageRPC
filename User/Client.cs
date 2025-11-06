@@ -1,16 +1,8 @@
 ﻿namespace Clients;
 
-using Microsoft.Extensions.DependencyInjection;
-
-using SimpleRpc.Transports;
-using SimpleRpc.Transports.Http.Server;
-using SimpleRpc.Serialization.Hyperion;
-
 using NLog;
+
 using Services;
-using NLog.Targets;
-using SimpleRpc.Transports.Http.Client;
-using System.Data.SqlTypes;
 
 class Client
 {
@@ -40,7 +32,7 @@ class Client
     {
         var config = new NLog.Config.LoggingConfiguration();
 
-        var console = new ConsoleTarget("console")
+        var console = new NLog.Targets.ConsoleTarget("console")
         {
             Layout = @"${date:format=HH\:mm\:ss}|${level}| ${message} ${exception}"
         };
@@ -66,7 +58,7 @@ class Client
             try
             {
                 //connect to the server, get service client proxy
-                var sc = new ServiceCollection();
+                var storage = new();
 
                 // Connection to the server
                 sc.AddSimpleRpcClient("storageService", new HttpClientTransportOptions

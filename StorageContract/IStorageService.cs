@@ -47,7 +47,7 @@ public interface IStorageService
     /// </summary>
     /// <param name="cleaner">Cleaner to add.</param>
     /// <returns>True if added successfully. False otherwise.</returns>
-    void AddToCleanersList(CleanerData cleaner);
+    bool AddToCleanersList(CleanerData cleaner);
 
     /// <summary>
     /// Allows to send the file to storage if there is enough space.
@@ -61,12 +61,6 @@ public interface IStorageService
     /// </summary>
     /// <returns>File descriptor.</returns>
     FileDesc? TryGetFile(int fileNumber);
-
-    /// <summary>
-    /// Gets the oldest file from storage.
-    /// </summary>
-    /// <returns>Oldest file.</returns>
-    bool TryRemoveOldestFile();
 
     /// <summary>
     /// Gets the oldest file from storage.
@@ -93,12 +87,5 @@ public interface IStorageService
     /// </summary>
     /// <returns>True if cleaning mode is active. False otherwise.</returns>
     bool IsCleaningMode();
-
-    /// <summary>
-    /// Changes cleaner state IsDoneCleaning to 'state' parameter.
-    /// </summary>
-    /// <param name="cleanerID">Cleaner's ID.</param>
-    /// <param name="state">State to put the cleaner in. True to make it done cleaning.</param>
-    void ChangeCleanerState(string cleanerID, bool state);
 }
 

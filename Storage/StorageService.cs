@@ -1,94 +1,233 @@
 namespace Servers;
 
+using System.Text;
+
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
+using NLog;
+using Newtonsoft.Json;
+
 using Services;
 
-public class StorageService : IStorageService
+public class StorageService
 {
-    private readonly StorageLogic _storageLogic = new StorageLogic();
+    /// <summary>
+    /// Name of the request exchange.
+    /// </summary>
+    private static readonly String ExchangeName = "Strorage.Exchange";
 
     /// <summary>
-    /// Gets total file count in the storage.
+    /// Name of the request queue.
     /// </summary>
-    /// <returns>File count in storage.</returns>
-    public int GetFileCount()
+    private static readonly String ServerQueueName = "Storage.StorageService";
+
+    /// <summary>
+    /// Logger for this class.
+    /// </summary>
+    private Logger _log = LogManager.GetCurrentClassLogger();
+
+    /// <summary>
+    /// Connection to RabbitMQ message broker.
+    /// </summary>
+    private IConnection rmqConn;
+
+    /// <summary>
+    /// Communications channel to RabbitMQ message broker.
+    /// </summary>
+    private IModel rmqChann;
+
+    /// <summary>
+    ///  Service logic
+    /// </summary>
+    private StorageLogic _storageLogic = new StorageLogic();
+
+    /// <summary>
+    ///  Constructor
+    /// </summary>
+    public StorageService()
     {
-        return _storageLogic.GetFileCount();
+        // Connect to the RabbitMQ message broker
+        ConnectionFactory rmqConnFact = new ConnectionFactory();
+        rmqConn = rmqConnFact.CreateConnection();
+
+        // Get channel, configure exhcanges and request queue
+        rmqChann = rmqConn.CreateModel();
+
+        rmqChann.ExchangeDeclare(exchange: ExchangeName, type: ExchangeType.Direct);
+        rmqChann.QueueDeclare(queue: ServerQueueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+        rmqChann.QueueBind(queue: ServerQueueName, exchange: ExchangeName, routingKey: ServerQueueName, arguments: null);
+
+        // Connect to the queue as consumer
+        //XXX: see https://www.rabbitmq.com/dotnet-api-guide.html#concurrency for threading issues
+        EventingBasicConsumer rmqConsumer = new EventingBasicConsumer(rmqChann);
+        rmqConsumer.Received += (consumer, delivery) => OnMessageReceived(((EventingBasicConsumer)consumer).Model, delivery);
+        rmqChann.BasicConsume(queue: ServerQueueName, autoAck: true, consumer: rmqConsumer);
     }
 
     /// <summary>
-    /// Allows to request a file to be received from the server.
+    /// Is invoked to process messages received.
     /// </summary>
-    /// <returns>File descriptor.</returns>
-    public FileDesc? TryGetFile(int fileNumber)
+    /// <param name="channel">Related communications channel.</param>
+    /// <param name="msgIn">Message deliver data.</param>
+    private void OnMessageReceived(IModel channel, BasicDeliverEventArgs msgIn)
     {
-        return _storageLogic.TryGetFile(fileNumber);
-    }
+        try
+        {
+            // Get call request
+            var request = JsonConvert.DeserializeObject<RPCMessage>(Encoding.UTF8.GetString(msgIn.Body.ToArray()));
 
-    /// <summary>
-    /// Gets the oldest file from storage.
-    /// </summary>
-    /// <returns>Oldest file.</returns>
-    public bool TryRemoveOldestFile()
-    {
-        return _storageLogic.TryRemoveOldestFile();
-    }
+            // Set response as undefined by default
+            RPCMessage response = null;
 
-    /// <summary>
-    /// Gets the oldest file from storage.
-    /// </summary>
-    /// <param name="cleanerID">Cleaner's ID who wants to clean.</param>
-    /// <returns>True if file has been removed. False otherwise.</returns>
-    public bool TryRemoveOldestFile(string cleanerID)
-    {
-        return _storageLogic.TryRemoveOldestFile(cleanerID);
-    }
+            switch (request.Action)
+            {
+                case $"Call_{nameof(_storageLogic.AddToCleanersList)}":
+                    {
+                        // Deserialize arguments
+                        var cleanerData = JsonConvert.DeserializeObject<CleanerData>(request.Data);
 
-    /// <summary>
-    /// Tells if cleaner is done cleaning or not.
-    /// </summary>
-    /// <param name="cleanerID">Cleaner's ID.</param>
-    /// <returns>True, if cleaner is done cleaning. False otherwise.</returns>
-    public bool GetCleanerState(string cleanerID)
-    {
-        return _storageLogic.GetCleanerState(cleanerID);
-    }
+                        // Make the call
+                        var result = _storageLogic.AddToCleanersList(cleanerData);
 
-    /// <summary>
-    /// Allows to send the file to storage if there is enough space.
-    /// </summary>
-    /// <param name="file">File to store.</param>
-    /// <returns>True if file successfully stored, false otherwise.</returns>
-    public bool TrySendFile(FileDesc file)
-    {
-        return _storageLogic.TrySendFile(file);
-    }
+                        // Create response
+                        response = new RPCMessage()
+                        {
+                            Action = $"Result_{nameof(_storageLogic.AddToCleanersList)}",
+                            Data = JsonConvert.SerializeObject(new { Value = result })
+                        };
 
-    /// <summary>
-    /// Tells if cleaning mode has been activated
-    /// </summary>
-    /// <returns>True if cleaning mode is active. False otherwise.</returns>
-    public bool IsCleaningMode()
-    {
-        return _storageLogic.IsCleaningMode();
-    }
+                        break;
+                    }
 
-    /// <summary>
-    /// Add a cleaner to the list.
-    /// </summary>
-    /// <param name="cleaner">Cleaner to add.</param>
-    /// <returns>True if added successfully. False otherwise.</returns>
-    public void AddToCleanersList(CleanerData cleaner)
-    {
-        _storageLogic.AddToCleanersList(cleaner);
-    }
+                case $"Call_{nameof(_storageLogic.GetCleanerState)}":
+                    {
+                        // Deserialize arguments
+                        var args = JsonConvert.DeserializeAnonymousType(request.Data, new { cleanerID = "1" });
 
-    /// <summary>
-    /// Changes cleaner state IsDoneCleaning to 'state' parameter.
-    /// </summary>
-    /// <param name="cleanerID">Cleaner's ID.</param>
-    /// <param name="state">State to put the cleaner in. True to make it done cleaning.</param>
-    public void ChangeCleanerState(string cleanerID, bool state)
-    {
-        _storageLogic.ChangeCleanerState(cleanerID, state);
+                        // Make the call
+                        var result = _storageLogic.GetCleanerState(args.cleanerID);
+
+                        // Create response
+                        response = new RPCMessage()
+                        {
+                            Action = $"Result_{nameof(_storageLogic.GetCleanerState)}",
+                            Data = JsonConvert.SerializeObject(new { Value = result })
+                        };
+
+                        break;
+                    }
+
+                case $"Call_{nameof(_storageLogic.GetFileCount)}":
+                    {
+                        // Make the call
+                        var result = _storageLogic.GetFileCount();
+
+                        // Create response
+                        response = new RPCMessage()
+                        {
+                            Action = $"Result_{nameof(_storageLogic.GetFileCount)}",
+                            Data = JsonConvert.SerializeObject(new { Value = result })
+                        };
+
+                        break;
+                    }
+
+                case $"Call_{nameof(_storageLogic.IsCleaningMode)}":
+                    {
+                        // Make the call
+                        var result = _storageLogic.IsCleaningMode();
+
+                        // Create response
+                        response = new RPCMessage()
+                        {
+                            Action = $"Result_{nameof(_storageLogic.IsCleaningMode)}",
+                            Data = JsonConvert.SerializeObject(new { Value = result })
+                        };
+
+                        break;
+                    }
+
+                case $"Call_{nameof(_storageLogic.TrySendFile)}":
+                    {
+                        // Deserialize arguments
+                        var fileDesc = JsonConvert.DeserializeObject<FileDesc>(request.Data);
+
+                        // Make the call
+                        var result = _storageLogic.TrySendFile(fileDesc);
+
+                        // Create response
+                        response = new RPCMessage()
+                        {
+                            Action = $"Result_{nameof(_storageLogic.TrySendFile)}",
+                            Data = JsonConvert.SerializeObject(new { Value = result })
+                        };
+
+                        break;
+                    }
+
+
+                case $"Call_{nameof(_storageLogic.TryGetFile)}":
+                    {
+                        // Deserialize arguments
+                        var args = JsonConvert.DeserializeAnonymousType(request.Data, new { fileIdx = 1 });
+
+                        // Make the call
+                        var result = _storageLogic.TryGetFile(args.fileIdx);
+
+                        // Create response
+                        response = new RPCMessage()
+                        {
+                            Action = $"Result_{nameof(_storageLogic.TryGetFile)}",
+                            Data = JsonConvert.SerializeObject(new { Value = result })
+                        };
+
+                        break;
+                    }
+
+                case $"Call_{nameof(_storageLogic.TryRemoveOldestFile)}":
+                    {
+                        // Deserialize arguments
+                        var args = JsonConvert.DeserializeAnonymousType(request.Data, new { cleanerID = 1 });
+
+                        // Make the call
+                        var result = _storageLogic.TryGetFile(args.cleanerID);
+
+                        // Create response
+                        response = new RPCMessage()
+                        {
+                            Action = $"Result_{nameof(_storageLogic.TryGetFile)}",
+                            Data = JsonConvert.SerializeObject(new { Value = result })
+                        };
+
+                        break;
+                    }
+
+                default:
+                    {
+                        _log.Info($"Unsupported type of RPC action '{request.Action}'. Ignoring the message.");
+                        break;
+                    }
+            }
+
+            // Response is defined? Send reply message
+            if (response != null)
+            {
+                // Prepare metadata for outgoing message
+                var msgOutProps = channel.CreateBasicProperties();
+                msgOutProps.CorrelationId = msgIn.BasicProperties.CorrelationId;
+
+                // Send reply message to the client queue
+                channel.BasicPublish(
+                    exchange: ExchangeName,
+                    routingKey: msgIn.BasicProperties.ReplyTo,
+                    basicProperties: msgOutProps,
+                    body: Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(response))
+                );
+            }
+        }
+        catch (Exception e)
+        {
+            _log.Error(e, "Unhandled exception caught when processing a message. The message is now lost.");
+        }
     }
 }
