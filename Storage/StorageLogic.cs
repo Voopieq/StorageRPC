@@ -167,7 +167,7 @@ class StorageLogic : IStorageService
             }
 
             // Get the cleaner
-            CleanerData? cleaner = null;
+            CleanerData cleaner = null;
             foreach (CleanerData cleanerData in _state.Cleaners)
             {
                 if (cleanerData.Id == cleanerID)

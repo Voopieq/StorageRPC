@@ -58,20 +58,7 @@ class Client
             try
             {
                 //connect to the server, get service client proxy
-                var storage = new();
-
-                // Connection to the server
-                sc.AddSimpleRpcClient("storageService", new HttpClientTransportOptions
-                {
-                    Url = "http://127.0.0.1:5000/filestoragerpc",
-                    Serializer = "HyperionMessageSerializer"
-                }).AddSimpleRpcHyperionSerializer();
-
-                sc.AddSimpleRpcProxy<IStorageService>("storageService");
-
-                var sp = sc.BuildServiceProvider();
-
-                var storageService = sp.GetService<IStorageService>();
+                var storage = new StorageClient();
 
                 // Initialize file descriptor.
                 FileDesc file = new FileDesc();
@@ -82,13 +69,13 @@ class Client
                     Thread.Sleep(2000 + rng.Next(1000));
 
                     // Storage is in cleaning mode. Pause the user.
-                    if (storageService.IsCleaningMode())
+                    if (storage.IsCleaningMode())
                     {
                         _log.Warn("Storage is in cleaning mode. Waiting for it to finish...\n");
                         continue;
                     }
 
-                    // Determine what to do: upload or download.
+                    // Determine what to do: download or upload.
                     operationType = (OperationType)rng.Next(0, 2);
                     _log.Info("I decided to " + operationType + " the file.");
 
@@ -103,7 +90,7 @@ class Client
                             file.FileSize = fileSize;
 
                             // Try to upload the file.
-                            if (!storageService.TrySendFile(file))
+                            if (!storage.TrySendFile(file))
                             {
                                 _log.Warn("Can't upload the file. Storage is full!\n");
                             }
@@ -114,11 +101,11 @@ class Client
                             break;
                         case OperationType.Download:
                             // Generate file number
-                            int fileCount = storageService.GetFileCount();
+                            int fileCount = storage.GetFileCount();
                             int rngFileNumber = rng.Next(fileCount);
 
                             // Try to download the file.
-                            if (storageService.TryGetFile(rngFileNumber) is null)
+                            if (storage.TryGetFile(rngFileNumber) is null)
                             {
                                 // File does not exist
                                 _log.Warn($"File with index {rngFileNumber} doesn't exist!\n");

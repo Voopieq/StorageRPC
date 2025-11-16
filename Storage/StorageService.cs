@@ -14,7 +14,7 @@ public class StorageService
     /// <summary>
     /// Name of the request exchange.
     /// </summary>
-    private static readonly String ExchangeName = "Strorage.Exchange";
+    private static readonly String ExchangeName = "Storage.Exchange";
 
     /// <summary>
     /// Name of the request queue.
@@ -187,15 +187,15 @@ public class StorageService
                 case $"Call_{nameof(_storageLogic.TryRemoveOldestFile)}":
                     {
                         // Deserialize arguments
-                        var args = JsonConvert.DeserializeAnonymousType(request.Data, new { cleanerID = 1 });
+                        var args = JsonConvert.DeserializeAnonymousType(request.Data, new { cleanerID = "id" });
 
                         // Make the call
-                        var result = _storageLogic.TryGetFile(args.cleanerID);
+                        var result = _storageLogic.TryRemoveOldestFile(args.cleanerID);
 
                         // Create response
                         response = new RPCMessage()
                         {
-                            Action = $"Result_{nameof(_storageLogic.TryGetFile)}",
+                            Action = $"Result_{nameof(_storageLogic.TryRemoveOldestFile)}",
                             Data = JsonConvert.SerializeObject(new { Value = result })
                         };
 

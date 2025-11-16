@@ -1,16 +1,8 @@
-﻿namespace Cleaner;
-
-using Microsoft.Extensions.DependencyInjection;
-
-using SimpleRpc.Transports;
-using SimpleRpc.Transports.Http.Server;
-using SimpleRpc.Serialization.Hyperion;
+﻿namespace Clients;
 
 using NLog;
+
 using Services;
-using NLog.Targets;
-using SimpleRpc.Transports.Http.Client;
-using System.Data.SqlTypes;
 
 class Cleaner
 {
@@ -36,7 +28,7 @@ class Cleaner
     {
         var config = new NLog.Config.LoggingConfiguration();
 
-        var console = new ConsoleTarget("console")
+        var console = new NLog.Targets.ConsoleTarget("console")
         {
             Layout = @"${date:format=HH\:mm\:ss}|${level}| ${message} ${exception}"
         };
@@ -64,27 +56,15 @@ class Cleaner
             try
             {
                 //connect to the server, get service client proxy
-                var sc = new ServiceCollection();
-
-                // Connection to the server
-                sc.AddSimpleRpcClient("storageService", new HttpClientTransportOptions
-                {
-                    Url = "http://127.0.0.1:5000/filestoragerpc",
-                    Serializer = "HyperionMessageSerializer"
-                }).AddSimpleRpcHyperionSerializer();
-
-                sc.AddSimpleRpcProxy<IStorageService>("storageService");
-
-                var sp = sc.BuildServiceProvider();
-
-                var storageService = sp.GetService<IStorageService>();
+                var storage = new StorageClient();
 
                 // Initialize cleaner data.
                 cleanerData = new CleanerData();
+
                 // Generate unique ID.
                 cleanerData.Id = Guid.NewGuid().ToString();
                 // Add cleaner to the list in server.
-                storageService.AddToCleanersList(cleanerData);
+                storage.AddToCleanersList(cleanerData);
 
                 // Cleaner stuff
                 while (true)
@@ -92,7 +72,7 @@ class Cleaner
                     Thread.Sleep(1000);
 
                     // If storage is not in cleaning mode, reset cleaner status.
-                    if (!storageService.IsCleaningMode())
+                    if (!storage.IsCleaningMode())
                     {
                         // Reset cleaner's local status.
                         hasCleanedThisCycle = false;
@@ -102,14 +82,14 @@ class Cleaner
                     }
 
                     // Cleaner is doing nothing and hasn't cleaned this cycle
-                    if (storageService.GetCleanerState(cleanerData.Id) && !hasCleanedThisCycle)
+                    if (storage.GetCleanerState(cleanerData.Id) && !hasCleanedThisCycle)
                     {
                         // Do the cleaning
                         Thread.Sleep(rng.Next(1500));
                         _log.Info("Retrieving a file from storage and deleting it...");
 
                         // Try to remove oldest file.
-                        if (storageService.TryRemoveOldestFile(cleanerData.Id))
+                        if (storage.TryRemoveOldestFile(cleanerData.Id))
                         {
                             _log.Info("File successfully deleted!\n");
                         }
