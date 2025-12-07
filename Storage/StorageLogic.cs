@@ -49,11 +49,13 @@ class StorageLogic
     /// </summary>
     /// <param name="cleaner">Cleaner to add.</param>
     /// <returns>True if added successfully. False otherwise.</returns>
-    public void AddToCleanersList(CleanerData cleaner)
+    public bool AddToCleanersList(CleanerData cleaner)
     {
         lock (_state.AccessLock)
         {
+            cleaner.IsDoneCleaning = true;
             _state.Cleaners.Add(cleaner);
+            return true;
         }
     }
 
@@ -140,10 +142,16 @@ class StorageLogic
     /// Allows to request a file to be received from the server.
     /// </summary>
     /// <returns>File descriptor.</returns>
-    public FileDesc? TryGetFile(int idx)
+    public FileDesc TryGetFile(int idx)
     {
         lock (_state.AccessLock)
         {
+            if (_state.FilesList.Count <= 0)
+            {
+                _log.Error($"Storage is empty! No files to return.");
+                return new FileDesc();
+            }
+
             FileDesc? file = _state.FilesList.ElementAtOrDefault(idx);
             if (file != null)
             {
@@ -155,29 +163,7 @@ class StorageLogic
 
             // File doesn't exist. Return an empty object and an error.
             _log.Error($"File with index {idx} doesn't exist in the storage!\n");
-            return null;
-        }
-    }
-
-    /// <summary>
-    /// Gets the oldest file from storage.
-    /// </summary>
-    /// <returns>True if file has been removed. False otherwise.</returns>
-    public bool TryRemoveOldestFile()
-    {
-        lock (_state.AccessLock)
-        {
-            if (_state.FilesList.Count <= 0)
-            {
-                _log.Error("There are no files in the storage to return!\n");
-                return false;
-            }
-
-            FileDesc file = _state.FilesList[0];
-            _state.FilesList.Remove(file);
-            _state.CurrentSize -= file.FileSize;
-            _log.Info("Oldest file removed. New storage size: " + _state.CurrentSize);
-            return true;
+            return new FileDesc();
         }
     }
 
@@ -197,7 +183,7 @@ class StorageLogic
             }
 
             // Get the cleaner
-            CleanerData? cleaner = null;
+            CleanerData cleaner = null;
             foreach (CleanerData cleanerData in _state.Cleaners)
             {
                 if (cleanerData.Id == cleanerID)

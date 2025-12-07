@@ -24,14 +24,6 @@ public class StorageService : IStorageService
         return _storageLogic.TryGetFile(fileNumber);
     }
 
-    /// <summary>
-    /// Gets the oldest file from storage.
-    /// </summary>
-    /// <returns>Oldest file.</returns>
-    public bool TryRemoveOldestFile()
-    {
-        return _storageLogic.TryRemoveOldestFile();
-    }
 
     /// <summary>
     /// Gets the oldest file from storage.
@@ -77,18 +69,8 @@ public class StorageService : IStorageService
     /// </summary>
     /// <param name="cleaner">Cleaner to add.</param>
     /// <returns>True if added successfully. False otherwise.</returns>
-    public void AddToCleanersList(CleanerData cleaner)
+    public bool AddToCleanersList(CleanerData cleaner)
     {
-        _storageLogic.AddToCleanersList(cleaner);
-    }
-
-    /// <summary>
-    /// Changes cleaner state IsDoneCleaning to 'state' parameter.
-    /// </summary>
-    /// <param name="cleanerID">Cleaner's ID.</param>
-    /// <param name="state">State to put the cleaner in. True to make it done cleaning.</param>
-    public void ChangeCleanerState(string cleanerID, bool state)
-    {
-        _storageLogic.ChangeCleanerState(cleanerID, state);
+        return _storageLogic.AddToCleanersList(cleaner);
     }
 }

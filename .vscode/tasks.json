@@ -13,6 +13,18 @@
             ],
             "problemMatcher": "$msCompile"
         },
+                {
+            "label": "build-AdapterLayer",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/AdapterLayer/AdapterLayer.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
         {
             "label": "build-User",
             "command": "dotnet",

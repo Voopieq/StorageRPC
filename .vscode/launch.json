@@ -15,6 +15,17 @@
             "console": "externalTerminal",
             "stopAtEntry": false
         },
+                {
+            "name": "AdapterLayer",
+            "type": "coreclr",
+            "request": "launch",           
+            "preLaunchTask": "build-AdapterLayer",
+            "program": "${workspaceFolder}/AdapterLayer/bin/Debug/net8.0/AdapterLayer.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/AdapterLayer",
+            "console": "externalTerminal",
+            "stopAtEntry": false
+        },
         {
             "name": "User",
             "type": "coreclr",
