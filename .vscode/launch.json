@@ -15,14 +15,25 @@
             "console": "externalTerminal",
             "stopAtEntry": false
         },
-                {
-            "name": "AdapterLayer",
+        {
+            "name": "SimpleRpcToRest",
             "type": "coreclr",
             "request": "launch",           
-            "preLaunchTask": "build-AdapterLayer",
-            "program": "${workspaceFolder}/AdapterLayer/bin/Debug/net8.0/AdapterLayer.dll",
+            "preLaunchTask": "build-SimpleRpcToRest",
+            "program": "${workspaceFolder}/SimpleRpcToRest/bin/Debug/net8.0/SimpleRpcToRest.dll",
             "args": [],
-            "cwd": "${workspaceFolder}/AdapterLayer",
+            "cwd": "${workspaceFolder}/SimpleRpcToRest",
+            "console": "externalTerminal",
+            "stopAtEntry": false
+        },
+        {
+            "name": "GrpcToRest",
+            "type": "coreclr",
+            "request": "launch",           
+            "preLaunchTask": "build-GrpcToRest",
+            "program": "${workspaceFolder}/GrpcToRest/bin/Debug/net8.0/GrpcToRest.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/GrpcToRest",
             "console": "externalTerminal",
             "stopAtEntry": false
         },

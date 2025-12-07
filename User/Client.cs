@@ -71,7 +71,7 @@ class Client
                 // Connection to the server
                 sc.AddSimpleRpcClient("storageService", new HttpClientTransportOptions
                 {
-                    Url = "http://127.0.0.1:7000/filestoragerpc",
+                    Url = "http://127.0.0.1:5002/filestoragerpc",
                     Serializer = "HyperionMessageSerializer"
                 }).AddSimpleRpcHyperionSerializer();
 

@@ -13,13 +13,25 @@
             ],
             "problemMatcher": "$msCompile"
         },
-                {
-            "label": "build-AdapterLayer",
+        {
+            "label": "build-SimpleRpcToRest",
             "command": "dotnet",
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/AdapterLayer/AdapterLayer.csproj",
+                "${workspaceFolder}/SimpleRpcToRest/SimpleRpcToRest.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "build-GrpcToRest",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/GrpcToRest/GrpcToRest.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
