@@ -45,9 +45,10 @@ public class Server
 
     private void StartServer(string[] args)
     {
+        //create web app builder
         var builder = WebApplication.CreateBuilder(args);
 
-        // Configure Kestrel if needed
+        //configure integrated server
         builder.WebHost.ConfigureKestrel(opts =>
         {
             opts.Listen(IPAddress.Loopback, 5002);
@@ -61,6 +62,8 @@ public class Server
             })
             .AddSimpleRpcHyperionSerializer();
 
+        //publish the background logic as (an internal) service through dependency injection, 
+        //otherwise it will not start until the first client calls into controller
         builder.Services.AddSingleton<IStorageService>(provider =>
         {
             // HttpClient that talks to REST server
